@@ -1,0 +1,41 @@
+{
+  "新建课程幻灯片": {
+    "scope": "markdown",
+    "prefix": "course-slide",
+    "body": [
+      "---",
+      "layout: ${1:default}",
+      "---",
+      "",
+      "## ${2:标题}",
+      "",
+      "${3:正文}",
+      "",
+      "<!--",
+      "${4:提词器讲稿}",
+      "",
+      "[Sources]",
+      "- ${5:来源}",
+      "-->"
+    ],
+    "description": "插入一页带提词器和来源的课程幻灯片"
+  },
+  "课程图片": {
+    "scope": "markdown",
+    "prefix": "course-image",
+    "body": [
+      "![${1:说明}](./assets/figures/${2:image.png}){fit=\"${3:contain}\" position=\"${4:center}\" max-height=\"${5:60vh}\"}"
+    ],
+    "description": "插入自动适配的课程图片"
+  },
+  "课程代码块": {
+    "scope": "markdown",
+    "prefix": "course-code",
+    "body": [
+      "```${1:java}",
+      "${2:代码}",
+      "```"
+    ],
+    "description": "插入带语言标注的代码块"
+  }
+}

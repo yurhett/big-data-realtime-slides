@@ -1,0 +1,20 @@
+{
+  "name": "big-data-realtime-slides",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "dev": "easy-slides dev",
+    "present": "easy-slides present",
+    "build": "easy-slides build",
+    "check": "easy-slides check",
+    "export": "easy-slides export"
+  },
+  "devDependencies": {
+    "@easy-slides/cli": "git+https://git.xaria.tk/yulonger/easy-slides.git",
+    "wrangler": "4.127.1"
+  }
+}

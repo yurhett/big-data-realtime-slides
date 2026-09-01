@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "easy-slides: 实时预览章节",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["dev", "--", "${input:chapter}"],
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "easy-slides: 演示章节",
+      "type": "shell",
+      "command": "pnpm",
+      "args": ["present", "--", "${input:chapter}"],
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "easy-slides: 检查全部课件",
+      "type": "shell",
+      "command": "pnpm check",
+      "problemMatcher": []
+    },
+    {
+      "label": "easy-slides: 构建站点",
+      "type": "shell",
+      "command": "pnpm build",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "chapter",
+      "type": "pickString",
+      "description": "选择章节目录",
+      "options": [
+        "chapter-1",
+        "chapter-2",
+        "chapter-3",
+        "chapter-4",
+        "chapter-5",
+        "chapter-6",
+        "chapter-7",
+        "chapter-8",
+        "chapter-9",
+        "chapter-10",
+        "chapter-11",
+        "chapter-12",
+        "chapter-13",
+        "chapter-14"
+      ]
+    }
+  ]
+}
