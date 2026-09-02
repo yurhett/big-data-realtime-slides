@@ -68,6 +68,33 @@ class: compact
 class: compact
 ---
 
+## 先理解：批处理 vs 流处理
+
+**批处理（像 Hadoop）**——像"交作业"：
+
+- 先把一批数据**攒齐**（比如一整天的日志），然后一次性算完
+- 特点：**量大、但不急**；处理完就结束了
+- 缺点：**延迟高**——数据来了不能马上反应
+
+**流处理（像 Storm）**——像"流水线的即时质检"：
+
+- 数据**源源不断**地来，来一条（一小批）就**立刻**处理一条
+- 特点：**低延迟、能做实时**（比如看到用户点击就马上推荐）
+- **永不结束**：只要数据一直来，就一直处理
+
+**一句话**：批处理是"攒够了再算"，流处理是"来了就算"。
+
+<!--
+学 Storm 最需要先建立的是"批处理 vs 流处理"的区别。批处理就像交作业：先把这一整天的数据都攒齐了，再一次性算完，量大但不急，但反应慢。流处理则像流水线上的即时质检：数据一来就立刻处理，毫不停歇，所以能实时响应——你一点按钮，它马上给你推荐。还有一个关键差别：批处理算完就结束了，而流处理只要数据不断就**永远不会停**。记住"批处理攒够了再算、流处理来了就算"，你就抓住了 Storm 存在的意义。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 10 章，基础。
+-->
+
+---
+class: compact
+---
+
 ## Storm 能做什么
 
 - **Hadoop 的局限**：处理 HDFS 上的数据，以磁盘为中间交换介质，适合离线分析；面对**实时数据流**力有未逮
@@ -142,7 +169,9 @@ class: compact
 
 ## 10.1.3 分布式计算结构
 
-![Storm 分布式计算结构](./assets/figures/storm-distributed-structure.png){fit="contain" position="center" max-height="48vh"}
+![Storm 分布式计算结构](./assets/figures/storm-distributed-structure.png){fit="contain" position="center" max-height="40vh"}
+
+- **读图**（自上而下）：**Nimbus**（资源分配/调度）→ **Zookeeper**（协调）→ 各 **Supervisor**（启动/停止 Worker）→ **Worker**（跑组件逻辑，内含多个 Task）
 
 <!--
 **[看图]** 这张图是 Storm 集群的骨架。最上面是主节点 Nimbus，它负责资源分配和任务调度；中间是 Zookeeper，负责协调；下面是一个个 Supervisor，它们接受 Nimbus 分配的任务，启动和停止自己管辖的 Worker 进程；每个 Worker 是一个运行具体组件逻辑的进程，里面跑着多个 Task。下面我们把这个层级拆开看。
@@ -194,12 +223,39 @@ class: compact
 class: compact
 ---
 
+## 打个比方：Spout 和 Bolt 就像工厂流水线
+
+**工厂要加工产品**，分工很明确：
+
+- **Spout（进料口）**：负责**把原料源源不断地搬进来**（相当于从外部数据源读数据）
+- **Bolt（流水线上的一道工序）**：负责**对材料做一步加工**（清洗、分类、组装）
+- **topology（整条流水线）**：把这些工序**按顺序连起来**的完整产线
+
+特点：
+
+- 料**不停地进**（流），加工**不停地进行**
+- 一道工序做不完？可以在同一工序**多开几个工位**（并行度）加快
+- 某道工序坏了？换个工位替补（容错），产线继续转
+
+<!--
+"Spout、Bolt、topology"这三个词，用工厂流水线来比喻就一下通透了。Spout 是进料口，负责把原料（数据）源源不断地搬进来；Bolt 是流水线上的一道工序，对材料做一步加工——清洗、分类、组装；而 topology 就是把所有工序按合理顺序连起来的那条完整产线。这里有三点特别像真实的工厂：料不停地进、加工不停；一道工序忙不过来就多开几个工位（这就是并行度）；某道工序坏了有个替补顶上去（就是容错）。记住这个流水线画面，后面所有 Spout/Bolt 的用法你都有了一个具体的形象。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 10.2 节，基础。
+-->
+
+---
+class: compact
+---
+
 ## topology：Spout 和 Bolt 的连接
 
 - Storm 输入流由 **Spout** 负责，数据传给 **Bolt** 处理（持久化或继续传递）
 - Spout、Bolt 及其连接组合成一个 **topology**；定义并行度即可**无限扩展**
 
-![一个简单的 topology](./assets/figures/simple-topology.png){fit="contain" position="center" max-height="40vh"}
+![一个简单的 topology](./assets/figures/simple-topology.png){fit="contain" position="center" max-height="38vh"}
+
+- **读图**：左 Spout 读入 → 切割 Bolt 分词 → 计数 Bolt 累加 → 落库
 
 <!--
 **[看图]** 用一个例子理解 topology。假设我们想知道电视播音员的名字是否被重复提及。字幕就是数据输入流，一个 Spout 从文件或套接字读取输入；文本行交给第一个 Bolt 切分成单词；单词流传到第二个 Bolt，与政治家名单比对，每匹配一次就在数据库里给该名字计数加一；想看结果直接查数据库。把这些 Spout、Bolt 和它们的连线放一起，就是一个 topology。看这张图，数据从左到右流经 Spout、切割 Bolt、计数 Bolt，最后落库。清晰吧。
@@ -232,7 +288,9 @@ class: compact
 
 用 Spout 读取单词，第一个 Bolt 标准化单词，第二个 Bolt 为单词计数：
 
-![单词计算流程](./assets/figures/word-count-flow.png){fit="contain" position="center" max-height="46vh"}
+![单词计算流程](./assets/figures/word-count-flow.png){fit="contain" position="center" max-height="42vh"}
+
+- **读图**：文件流 → **WordReader**(Spout) → **WordNormalizer**(Bolt，标准化) → **WordCounter**(Bolt，计数)
 
 <!--
 **[看图]** 我们看这个单词计数 topology 的数据流。左边 Spout 是 WordReader，它读文件，把每一行作为一个值发射出去；中间第一个 Bolt 是 WordNormalizer，负责把单词标准化（比如转小写、去标点）；右边是 WordCounter，真正做计数。看图里从左往右：文件流进 Spout，再进 Normalizer，最后进 Counter。这个三层结构——读、处理、计数——就是流式处理最经典的套路，改一改就能做 Twitter 话题趋势这种实时统计。
@@ -332,7 +390,9 @@ class: compact
 
 ## 默认执行情况
 
-![Worker 执行流程](./assets/figures/worker-execution-default.png){fit="contain" position="center" max-height="46vh"}
+![Worker 执行流程](./assets/figures/worker-execution-default.png){fit="contain" position="center" max-height="40vh"}
+
+- **读图**：一个 **Node** 里一个 **Worker(JVM)**，内部多个 **Executor(线程)**，每个 Executor 各自对应一个 **Task**——此时并行度只有线程级别
 
 <!--
 **[看图]** 假设一台 Node、一个 Worker 拓扑，且默认一个任务一个 Executor，执行情况就像这张图：一个 Node 里一个 Worker(JVM)，里面几个 Executor(线程)，每个 Executor 对应一个 Task。此时并行度只有线程级别——虽然跑起来了，但一台机器、一个 JVM 显然远没榨干硬件潜力。那怎么提升？往下看，加 Worker 和 Executor。
@@ -397,7 +457,9 @@ class: compact
 
 ## 修改配置后的执行流程（一）：Spout 加并发
 
-![修改配置后的 Worker 执行流程](./assets/figures/worker-execution-configured.png){fit="contain" position="center" max-height="48vh"}
+![修改配置后的 Worker 执行流程](./assets/figures/worker-execution-configured.png){fit="contain" position="center" max-height="42vh"}
+
+- **读图**：只把 SentenceSpout 配成 **2 个 Executor**，Worker 仍是 1 个——并行度第一步提升，让数据源更快喂给下游
 
 <!--
 **[看图]** 先看第一步：只把 SentenceSpout 配成 2 个 Executor 后的样子。在这个 Node 的一个 Worker 里，Spout 现在有了两个线程。这是并行度的第一步提升——把最上游的数据源先并行起来，让它能更快地把句子喂给下游。注意看，这里 Worker 还是一个，但内部的执行线程已经变多了。
@@ -412,7 +474,9 @@ class: compact
 
 ## 修改配置后的执行流程（二）：全链路加并发
 
-![分割 Bolt 后的 Worker 执行流程](./assets/figures/worker-execution-multi.png){fit="contain" position="center" max-height="48vh"}
+![分割 Bolt 后的 Worker 执行流程](./assets/figures/worker-execution-multi.png){fit="contain" position="center" max-height="42vh"}
+
+- **读图**：分割 Bolt = 2 个 Executor、4 个 task（每个跑 2 个）；计数 Bolt = 4 线程，且用了 2 个 Worker——"改配置就扩容"
 
 <!--
 **[看图]** 再看第二步：进一步把分割 Bolt 配成"2 个 Executor、4 个 task"（每个 Executor 跑 2 个 task），计数 Bolt 配成 4 个线程，而且用了两个 Worker。你能直观看到：从一两个线程，扩展成了一堆线程分摊任务。这就是"改配置就扩容"——逻辑不变，只是把同样的逻辑复制成更多份并行跑。这也解释了为什么说 Storm 支持无限的水平扩展。
@@ -544,9 +608,11 @@ class: compact
 
 ## 消息树
 
-以单词计数为例，句子 tuple 会衍生出单词 tuple、计数 tuple 等，构成一棵**消息树**——整棵都处理完才算成功；超时则整条失败（`TOPOLOGY_MESSAGE_TIMEOUT_SECS`，默认 30s）。
+句子 tuple 会衍生出单词、计数 tuple，构成一棵**消息树**——整棵处理完才算成功，超时则整条失败（默认 30s）。
 
-![消息树](./assets/figures/message-tree.png){fit="contain" position="center" max-height="40vh"}
+![消息树](./assets/figures/message-tree.png){fit="contain" position="center" max-height="38vh"}
+
+- **读图**：Spout 派发的句子 tuple 为根 → 切分成单词 tuple → 每个单词再衍生出计数 tuple，层层挂成一棵树
 
 <!--
 **[看图]** 这张图就是消息树的直观展示。最左边是 Spout 派发的一个句子 tuple"my dog has fleas"；往右，它被切分成四个单词 tuple；再往后每个单词又衍生出对应的计数。这种层层派生，就形成了一棵以 Spout tuple 为根的"树"。可靠性的定义就基于这棵树：整棵树都处理完，才算成功；任一环节超时或失败，整条消息重新处理。默认超时 30 秒，可以调 TOPOLOGY_MESSAGE_TIMEOUT_SECS。理解了这个树形模型，后面锚定和 acker 才讲得通。
@@ -582,10 +648,10 @@ class: compact
 
 ## 锚定（anchoring）
 
-- **锚定**：把新 tuple 与输入 tuple 关联，从而挂到消息树上——`emit(input, new Values(word))` 第一个参数即锚定
-- **非锚定**：`emit(new Values(word))` 不带输入 tuple；**多锚定**可把树变成**有向无环图（DAG）**，用于重联、聚合
+- **锚定**：把新 tuple 与输入 tuple 关联、挂到消息树上——`emit(input, new Values(word))` 的首参即锚定
+- **非锚定**：不带输入 tuple；**多锚定**把树变成**有向无环图（DAG）**，用于重联、聚合
 
-![有向无环图](./assets/figures/tuple-dag.png){fit="contain" position="center" max-height="26vh"}
+![有向无环图](./assets/figures/tuple-dag.png){fit="contain" position="center" max-height="22vh"}
 
 <!--
 **[看代码]** 锚定是可靠性机制里最需要动手做对的一步。看 emit 的两种写法：带第一个参数 input 的，是把新单词 tuple 挂到输入句子的消息树上——这叫**锚定**，这样下游失败会回溯让根节点重新处理；不带 input 的，就是**非锚定**，下游失败跟源头无关。多数情况下你要锚定，除非确实不关心下游。更进阶的是多锚定：一个输出 tuple 可以同时挂在多个输入 tuple 上，比如把两路流 join 到一起，见右边的 DAG 图——这时候消息树就不再是严格的一棵树，而是一个有向无环图，任一分支失败都可能触发多个根的重新处理。
@@ -667,6 +733,27 @@ class: compact
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 10.5 节。
+-->
+
+---
+class: compact
+---
+
+## 想一想（自检）
+
+**问题 1**：我们用 Storm 做"单词计数"，为什么必须把"计数"这一步按单词（word）字段分组？
+
+> 提示：想想如果同一个单词被分到了不同的 task 会怎样。
+
+**问题 2**：Storm 如何做到"消息至少被处理一次"？请说出靠哪两个机制配合。
+
+> 提示：回想"消息树/锚定"和"acker 超时重发"。
+
+<!--
+这两个问题是全章的灵魂。第一题：因为计数是有**状态**的操作——如果同一个单词"dog"被随机分到两个 task，每个 task 各自数自己的，总数就错了。只有按 word 字段分组，让所有"dog"进同一个 task，计数才准确。所以**有状态的环节必须按状态字段分组**。第二题：靠**锚定**（把新 tuple 挂到输入的消息树上）+ **acker**（用异或跟踪整棵树，超时或失败就通过 ack/fail 让 Spout 重发原始消息）。两者配合，消息要么处理成功、要么被重新发送，从而保证"至少一次"。答出这两点，你就真正掌握了 Storm 的核心。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 10 章，自检。
 -->
 
 ---

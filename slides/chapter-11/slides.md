@@ -66,6 +66,26 @@ class: compact
 class: compact
 ---
 
+## 打个比方：Storm 集群就像一个"建筑工地"
+
+- **nimbus（总工头）**：一个人坐镇指挥部，负责**派活、监工、谁出问题就重新调度**
+- **supervisor（各班组长）**：每个工地（工作节点）有一个班组长，听总工头安排，**组织手下的工人干活**
+- **Worker（工人）**：真正**动手干活**的进程
+- **Zookeeper（工程协调处）**：记录"谁在岗、谁缺勤"，帮大家互通信息
+
+**关键点**：总工头（nimbus）**不亲自干活**——所以就算总工头暂时不在，只要各班组长和工人还在干，工程照常进行；但总工头不在时万一有班组出事，就没人重新调度了。
+
+<!--
+配置一个 Storm 集群，先把它想成一个建筑工地。nimbus 是总工头，坐镇指挥部，负责派活、监工、出问题重新调度；supervisor 是各班组长，分布在每个工地，听总工头安排、组织手下工人干活；Worker 就是真正动手的工人；而 Zookeeper 是工程协调处，记录谁在岗谁缺勤。这里最值得记住的一点是：总工头 nimbus 自己不干活，只负责调度。所以万一总工头临时不在，只要各班组长和工人还在照常干，工程就继续；但要是这时候某个班组出事，没人重新调度，就会出乱子。这个比喻让你对"nimbus 不作单点故障"有直观理解。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 11.1 节，基础。
+-->
+
+---
+class: compact
+---
+
 ## Storm 集群框架
 
 ![Storm 集群的框架](./assets/figures/storm-cluster-framework.png){fit="contain" position="center" max-height="46vh"}
@@ -120,10 +140,11 @@ class: compact
 
 ## DRPC 服务工作机制
 
-- 把 Storm 的分布式计算能力应用到**"请求—响应"范式**：客户端提交请求并同步等待响应
-- topology 用 **DRPCSpout** 从服务器接收函数调用流；算完后由 **ReturnResults** Bolt 凭唯一 id 把结果送回 DRPC 服务器
+- 把 Storm 的分布式计算能力应用到**"请求—响应"范式**；topology 用 **DRPCSpout** 接收调用、算完由 **ReturnResults** Bolt 凭唯一 id 送回结果
 
-![DRPC 的工作流机制](./assets/figures/drpc-workflow.png){fit="contain" position="center" max-height="38vh"}
+![DRPC 的工作流机制](./assets/figures/drpc-workflow.png){fit="contain" position="center" max-height="34vh"}
+
+- **读图**：客户端 → **DRPC Server**（带唯一 id）→ topology 的 **DRPCSpout** → 计算 → **ReturnResults** 送回并唤醒客户端
 
 <!--
 **[看图]** 这张图展示 DRPC（分布式 RPC）的完整闭环。左边客户端发请求给 DRPC Server，请求里带函数名和参数；中间是 topology，它通过 DRPCSpout 接住这些调用，每个调用带唯一 id；算完后再由 ReturnResults Bolt 把结果送回 DRPC Server；最后由服务器凭这个唯一 id 唤醒等待中的客户端。你可能会疑惑：topology 是异步、长时间运行的，跟"请求-响应"的同步范式怎么协调？答案是 DRPC 服务器充当了桥梁——把同步的客户端请求，转化为流式计算里的一个个带 id 的调用，算完再配回去。这样分布式计算也被"伪装"成了普通的远程函数调用。
@@ -294,6 +315,27 @@ storm kill {toponame}
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 11.3 节。
+-->
+
+---
+class: compact
+---
+
+## 想一想（自检）
+
+**问题 1**：配置 `storm.yaml` 时，`nimbus.host` 和 `storm.zookeeper.servers` 各自是给谁用的？
+
+> 提示：一个告诉"去哪交任务"，一个告诉"去哪登记"。
+
+**问题 2**：为什么 Storm 允许"快速失败"（进程挂了重启也不影响正在跑的 topology）？
+
+> 提示：想想 nimbus/supervisor 的状态保存在哪里。
+
+<!--
+这两个问题考你对配置文件的理解和"无状态"设计。第一题：**nimbus.host** 是给各 supervisor 用的，告诉它们"nimbus 在哪"，好去下载 topology 的 jar 和配置；**storm.zookeeper.servers** 是告诉集群"Zookeeper 在哪"，用来登记和协调。二者角色不同。第二题：因为 Storm 的 nimbus 和 supervisor **不在进程内保存状态**，状态都存在 Zookeeper 里，所以进程挂了、重启后能从 Zookeeper 恢复、正确接着干——这就叫"快速失败 + 无状态"。答出这两点，你就真理解集群配置和容错设计了。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 11 章，自检。
 -->
 
 ---

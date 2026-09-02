@@ -45,6 +45,33 @@ class: compact
 -->
 
 ---
+class: compact
+---
+
+## 先理解：同步调用 vs 异步流
+
+这一章解决一个"别扭"的问题，先分清两种做事方式：
+
+**同步调用（像打电话）**：
+
+- 你**打过去、对方接、说结果**，你**一直握着电话等**
+- 特点：**一问一答、你等着结果**，简单直接（普通 RPC 就是这样）
+
+**异步流（Storm 的默认方式）**：
+
+- 数据**源源不断**进来，系统**一直在算**，但**没人等它**——算完就继续下一批
+- 特点：**高吞吐、长时间运行**，但"没有一个明确的等待者"
+
+**矛盾来了**：Storm 天生是"异步流"，但很多业务想要"一问一答"的同步体验。**DRPC 就是来调和这对矛盾的**——让异步的 Storm 也能提供"像普通函数调用"的同步服务。
+
+<!--
+这一章的主题 DRPC，背后是"同步"和"异步"两种做事方式的矛盾。同步调用就像打电话：你打过去，对方接起来讲结果，你全程握着电话等——一问一答，简单直接，普通 RPC 就是这样。而 Storm 默认是异步流：数据源源不断来、系统一直在算，但没有任何人在旁边干等着——吞吐高、能长时间跑。两者好像对不上：Storm 天生异步，可业务偏偏想要同步的"一问一答"。DRPC 就是那个"和事佬"，它让异步的 Storm 也能对外提供"像普通函数调用一样"的同步服务。带着这个矛盾去理解 DRPC，你会觉得很自然。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 13 章，基础。
+-->
+
+---
 layout: section
 class: compact
 ---
@@ -68,12 +95,10 @@ class: compact
 
 ## DRPC 工作流程
 
-![DRPC 工作流程](./assets/figures/drpc-request-flow.png){fit="contain" position="center" max-height="42vh"}
+![DRPC 工作流程](./assets/figures/drpc-request-flow.png){fit="contain" position="center" max-height="52vh"}
 
-- DRPC 用 Storm 的实时计算能力**并行化 CPU 密集型**的计算任务
-- DRPC topology 以**函数参数流**作为输入，把**函数调用的返回值**作为输出流
-- 由 **DRPC 服务器**协调：接收 RPC 请求 → 发到 Storm topology → 接收结果 → 发回等待的客户端
-- 从客户端视角，调用 DRPC 与普通 RPC **没有任何区别**
+- 用 Storm 实时计算能力**并行化 CPU 密集型**任务；topology 以**函数参数流**为输入、把**返回值**作为输出流
+- 由 **DRPC 服务器**协调（接收请求 → 发到 topology → 收结果 → 发回客户端）；客户端视角与普通 RPC **无异**
 
 <!--
 **[看图]** 这张图是 DRPC 的完整闭环，我们顺着走一遍。最左边是客户端，它发送一个请求：要执行的函数名和参数；中间的 DRPC Server 把这些请求包装成带唯一 id 的调用，交给右边的 topology；topology 里的 DRPCSpout 接收这些调用，算出结果后，由 ReturnResults 这个 Bolt 带着唯一 id 返回给 DRPC Server；服务器凭 id 唤醒对应客户端、把结果送回。对客户端来说，它只看到"发起请求、拿到结果"，就像调一个普通函数。这就是分布式 RPC——把重活的分布并行藏在了一次函数调用的表象之下。
@@ -349,6 +374,27 @@ public class PartialUniquer extends BaseBatchBolt {
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 13.5 节。
+-->
+
+---
+class: compact
+---
+
+## 想一想（自检）
+
+**问题 1**：用 `LinearDRPCTopologyBuilder` 时，约定"第一个 Bolt 收什么、最后一个 Bolt 发什么"？
+
+> 提示：回忆 `[request-id, 参数]` 和 `[id, result]` 这两组。
+
+**问题 2**：在 reach 例子里，为什么计算粉丝时要先 `shuffle` 并把并行度提到很大？
+
+> 提示：想想这一环节的"数据量"和"是否耗时"。
+
+<!--
+这两题考你对 DRPC 约定和并行设计理解。第一题：约定是——**第一个 Bolt 收两个字段 `[request-id, 参数]`**（request-id 是请求的唯一标识），**最后一个 Bolt 发两个字段 `[id, result]`**（id 与 request-id 对应，result 是结果）；中间所有 tuple 的第一个字段必须一直是 request-id。这样 LinearDRPCTopologyBuilder 才能在结尾正确地把结果按 id 送回去。第二题：reach 里"获取粉丝"这一步数据量最大、最耗时（要查海量粉丝），所以用 shuffle 把任务均匀分散到很多 worker、并配极大并行度，让最重的活由最多的人一起干。答出这两点，你对 DRPC 的"约定"和"并行优化"就清晰了。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 13 章，自检。
 -->
 
 ---

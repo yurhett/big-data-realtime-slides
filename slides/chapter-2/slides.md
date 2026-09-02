@@ -68,6 +68,29 @@ class: compact
 class: compact
 ---
 
+## 先理解：生产者、消费者、消息
+
+- **消息（message）**：就是一段要传递的数据，比如"用户 A 点了一个按钮""一条日志"
+- **生产者（producer）**：负责**发出**消息的一方
+- **消费者（consumer）**：负责**接收并处理**消息的一方
+- 中间需要一个"**中转站**"来承接——否则生产者只能把消息直接塞给消费者，两者就绑死了
+
+```
+  生产者  ──消息──▶  中转站  ──消息──▶  消费者
+  (producer)        (Kafka)          (consumer)
+```
+
+<!--
+这一章的主角是 Kafka，但理解它之前，先认识三个最基本的概念：消息、生产者、消费者。消息就是要传递的那一段数据；生产者是"抛出"消息的人；消费者是"接住并处理"消息的人。关键是中间那个"中转站"——它让生产者和消费者不必直接认识。你可以回想上一章的"邮局"比喻：生产者是寄信人，消费者是收信人，Kafka 就是那个邮局。把这三个词记住，后面所有 Kafka 术语都不难。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 2.1 节，基础。
+-->
+
+---
+class: compact
+---
+
 ## 2.1.1 Kafka 概述
 
 - 高吞吐的分布式消息系统
@@ -202,7 +225,10 @@ class: compact
 
 ## 2.1.6 Kafka 在 LinkedIn 中的应用
 
-![LinkedIn 中各系统的拓扑关系](./assets/figures/linkedin-topology.png){fit="contain" position="center" max-height="52vh"}
+![LinkedIn 中各系统的拓扑关系](./assets/figures/linkedin-topology.png){fit="contain" position="center" max-height="44vh"}
+
+- **读图**：众多**前端入口 + 后端服务**都把数据汇聚到中间的 **Kafka**
+- Kafka 再同时喂给**在线服务**与**离线 Hadoop/数据仓库**——既是统一管道，也是缓冲区
 
 <!--
 **[看图]** 我们把理论落到一个真实的例子：LinkedIn。大家看这张拓扑图，几乎所有前端入口和业务后端都把数据汇聚到中间那个 Kafka 上，Kafka 再同时喂给右侧的在线服务和离线的 Hadoop、数据仓库。一个单独的 Kafka 集群，处理来自各种来源的活动数据，同时为在线和离线消费者提供一条统一的数据管道，本身也是一个缓冲区。
@@ -217,7 +243,10 @@ class: compact
 
 ## 多数据中心拓扑
 
-![多数据中心拓扑结构](./assets/figures/multi-datacenter-topology.png){fit="contain" position="center" max-height="52vh"}
+![多数据中心拓扑结构](./assets/figures/multi-datacenter-topology.png){fit="contain" position="center" max-height="44vh"}
+
+- **读图**：上面两个 **Live Datacenter** 各有自己的 Kafka 集群，**互不直接通信**
+- 下面 **Aggregate Kafka** 通过**镜像（mirroring）**扮演源集群 consumers，把多个机房数据聚到一处，再喂给离线 Hadoop
 
 <!--
 **[看图]** 那么问题来了：一家公司往往不止一个数据中心，Kafka 要不要跨机房？Kafka 的做法是让一个集群不横跨多个数据中心，而是通过**镜像（mirroring）**把数据同步过去。大家看这张图，上面的两个“Live Datacenter”各自有自己的 Kafka 集群，它们之间并不直接通信；下面那个“Aggregate Kafka”集群，通过镜像扮演源集群 consumers 的角色，把多个数据中心的数据集中到一个地方，再喂给离线 Hadoop。这样一个集群就能聚合多个机房的数据。
@@ -230,12 +259,36 @@ class: compact
 class: compact
 ---
 
+## 打个比方：Topic 就像"报刊的分类"
+
+**分类（Topic）**：Kafka 里有成千上万条消息，怎么区分？给它们**分类**，一类就叫一个 **Topic**。
+
+- 好比一家书店有"财经类""小说类""少儿类"——每种读物进不同的分类架
+- 生产者把"用户点击"的消息放进"点击"Topic，把"订单"放进"订单"Topic
+
+**分区（partition）**：一个 Topic 的数据太多，一本"小说"放不下、也看不过来，就**分成几册**（分区）。
+
+- 想象一本特别厚的书被分成上、中、下三册，放在不同的架子上
+- 谁要看某一册，就去那个架子——**不同的分册可以同时被不同的人读**（并行）
+
+<!--
+Topic 这个词很多同学记不住，但只要想成"报刊分类"就明白了。Kafka 里的消息千千万万，不可能混在一堆，所以按类别分成一个个 Topic——就像书店按财经、小说、少儿分类。而一个 Topic 内部的数据往往又多到"一册装不下"，于是又切成几个分区——就像一本厚书分成上中下三册。为什么要分册？因为这样不同的人可以同时读不同的册子，处理就快了。记住"分类是 Topic，分册是分区"，这一页你就抓住了 Kafka 数据组织的核心。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 2.2 节，基础。
+-->
+
+---
+class: compact
+---
+
 ## 2.2 Topics 和 logs：从抽象说起
 
-- **Topic**：不同消息的类别或信息流；producer 把不同分类的消息发到不同 Topic
-- 对每个 Topic，Kafka 集群维护一个**分区的日志**
+![Topic 的分布解析](./assets/figures/topic-log-partition.png){fit="contain" position="center" max-height="40vh"}
 
-![Topic 的分布解析](./assets/figures/topic-log-partition.png){fit="contain" position="center" max-height="46vh"}
+- **Topic**＝不同消息的类别 / 信息流，producer 把不同分类发到不同 Topic
+- **读图**：一个 Topic 被切成多个 **Partition**，分区内消息**有序且只追加**、各有唯一 **offset**；箭头 **Old→New** 表示只往尾部写
+- 分区是**扩容**与**并行消费**的基础
 
 <!--
 **[切入]** 现在进入 2.2，讲 Kafka 最核心的高层抽象——Topic。Topic 你可以理解成“消息的分类标签”。比如“用户点击”是一类，“订单”是另一类，生产者的消息按类别发进不同 Topic。但真正重要的是每个 Topic 背后的组织方式：它不是一个独立的文件，而是一条被分区的日志。我们看这张图。
@@ -364,7 +417,10 @@ class: compact
 
 ## 一个具体的集群例子
 
-![两个机器组成的集群](./assets/figures/kafka-cluster-partition.png){fit="contain" position="center" max-height="50vh"}
+![两个机器组成的集群](./assets/figures/kafka-cluster-partition.png){fit="contain" position="center" max-height="44vh"}
+
+- **读图**：两台机器、4 个分区（P0–P3）；Server1 管 P0/P3，Server2 管 P1/P2
+- Consumer 组 A（2 个）、组 B（4 个）；**每个分区只分给所属组里的一个消费者** → 分区内可**有序**消费
 
 <!--
 **[看图]** 我们来读一张具体的图：两台机器组成的集群，有 4 个分区 P0 到 P3，两个 consumer 组——A 组有 2 个消费者，B 组有 4 个。看箭头，P0 和 P3 落在 Server1 上，P1、P2 落在 Server2 上；而每个分区，从消费角度看，只把这个分区分配给它所属组里的某一个消费者。这样就保证了：同一个分区不会被同组多个消费者抢着读，也就能有序地消费。
@@ -408,6 +464,27 @@ class: compact
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 2.3 节。
+-->
+
+---
+class: compact
+---
+
+## 想一想（自检）
+
+**问题 1**：一家外卖平台，想让"同一个用户的下单消息永远按时间顺序处理"，它应该怎么设计 Topic 的分区？
+
+> 提示：想一想"分区内有序"和"按 key 分区"这两点。
+
+**问题 2**：如果这个平台有 4 个分区，却配了 6 个消费者在同一个组里，会发生什么？为什么？
+
+> 提示：回忆"consumer 组数不能超过分区数"。
+
+<!--
+这两个问题考的是你有没有真正理解"分区"和"consumer 组"。第一题：要让同一个用户的消息有序，就得让"同一个用户"永远进**同一个分区**——也就是按用户 id（key）来分区（partitionBy）。第二题：4 个分区却配 6 个消费者，那多出来的 2 个消费者会**空闲**，因为每个分区同一时间只分配给组内的一个消费者，消费者数超出了分区数就没活可干，白白浪费。能想明白这两点，你对 Kafka 的核心模型就真的懂了，而不仅仅是背了概念。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 2 章，自检。
 -->
 
 ---

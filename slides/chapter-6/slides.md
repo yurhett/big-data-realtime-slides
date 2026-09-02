@@ -65,6 +65,31 @@ class: compact
 class: compact
 ---
 
+## 先理解：关系型数据库 vs NoSQL
+
+**关系型数据库（如 MySQL、Oracle）**——像"登记表格"：
+
+- 每一行是一**条记录**，每一列是**固定字段**，结构和格式都是**规定死的**
+- 好处：规范、一致、能查关系；坏处：**一旦字段定死就不灵活**，数据大到一定程度**很难横向扩展**
+
+**NoSQL（非关系型，如 HBase）**——像"更自由的大仓库"：
+
+- 不需要把所有字段都定死，可以**按需加列**（灵活）
+- 天生为**海量数据和横向扩展**设计：一台装不下，就加很多台一起存
+
+**一句话**：关系型靠"规范一致"，NoSQL 靠"灵活 + 能铺到很多台机器"。
+
+<!--
+要理解 HBase，得先分清它和传统数据库的区别，否则你会一直用"MySQL 的思维"去套它，越套越懵。你可以把关系型数据库想成一张"登记表格"：每一行是一条记录，每列字段固定、格式统一，好处是规范清楚，但缺点也很明显——字段一多就死板，数据一大就难扩展。而 HBase 这类 NoSQL 更像一个"自由的仓库"：不用预先定死所有列，需要就加；最重要的是它天生就是给海量数据准备的，一台装不下就加几十台一起存。记住"关系型讲规范、NoSQL 讲灵活和横向扩展"这个区别，再看 HBase 就顺了。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 6.1 节，基础。
+-->
+
+---
+class: compact
+---
+
 ## 6.1.1 大数据的背景：数据在爆炸
 
 - 2015 年产生和复制的数据量超 **2×10¹³ GB**，约为世界所有海滩沙粒总数的 20 倍
@@ -123,7 +148,10 @@ class: compact
 
 ## 6.1.2 HBase 架构
 
-![HBase 框架](./assets/figures/hbase-architecture.png){fit="contain" position="center" max-height="56vh"}
+![HBase 框架](./assets/figures/hbase-architecture.png){fit="contain" position="center" max-height="46vh"}
+
+- **读图**（上→下）：**Master** 管分配（旁边 **Zookeeper** 保证唯一 Master、监控上下线）→ **Region Server** 管 **Region**（内含 **Store** + **StoreFile**），每台共享一个 **HLog**
+- 客户端读写最终都落到**某个 Region Server**
 
 <!--
 **[看图]** 我们把 HBase 的架构图完整看一遍。它其实分上下两层。上面是统筹层：一个 Master 管理多个 Region Server；旁边是 Zookeeper。下面是一串 Region Server，每个 Region Server 管理着若干个 Region；Region 内部是 Store（对应一个列簇）和 StoreFile；每个 Region Server 还共享一个 HLog。整体来看，客户端的数据读写请求，最终都落到某个 Region Server 上。下面我们逐个组件看它的职能。
@@ -156,7 +184,10 @@ class: compact
 
 ## HBase 读数据的流程
 
-![Zookeeper 集群基本流程](./assets/figures/hbase-read-flow.png){fit="contain" position="center" max-height="52vh"}
+![Zookeeper 集群基本流程](./assets/figures/hbase-read-flow.png){fit="contain" position="center" max-height="44vh"}
+
+- **读图**：客户端先查 **Zookeeper** 拿含 **ROOT_** 的服务器 → 再查 **.META.** 表 → 最后查到目标**行键**所在 **Region Server**，直达
+- 定位信息会**缓存**，二次访问更快
 
 <!--
 **[看图]** 这里我们要回答一个关键问题：客户端怎么知道一条数据在哪个 Region Server 上？看这张图，它展示了通过 Zookeeper 定位数据的流程。先从 Zookeeper 查含 ROOT_ 的 region 服务器，再从它查到含 .META. 表的 region 服务器，最后从 .META. 表查到目标数据所在 region 的服务器名。
@@ -203,8 +234,6 @@ class: compact easy-table-sm
 | HColumnDescriptor | `removeFamily(byte[] column)` | 移除一个列簇 |
 | byte[] | `getName()` | 获取表名 |
 | void | `put(Put put)` | 向表中添加值 |
-
-- 更高级特性：单元格的值可当作**计数器**，支持**原子更新**；一个操作内完成读和修改，即便分布式架构也能实现**全局强一致、连续的计数器**
 
 <!--
 **[核心]** HBase 的存储 API 相当精简，围绕"表"和"列簇"展开：创建表、删除表、增删列簇、改元数据，落库用 put。它刻意保持接口简单（呼应 BigTable 那套"简单 API + 扫描函数"的思想）。但它还有一个不起眼却很强大的能力：单元格的值可以当计数器用，而且支持原子更新、一次操作完成读+改，即便在分布式架构下也能拿到全局强一致、连续的计数器。这意味着你想做一个绝对不会重复计数的东西，比如全局流水号，可以直接靠 HBase 实现。
@@ -354,6 +383,27 @@ class: compact
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 6.2 节。
+-->
+
+---
+class: compact
+---
+
+## 想一想（自检）
+
+**问题 1**：老张的表有 10 亿行数据、想快速按"行键"精确查到某一行，HBase 的定位流程要经过哪三步？
+
+> 提示：回想 Zookeeper → ROOT_ → .META. 的套路。
+
+**问题 2**：为什么说 HBase 的 Master"不再是单点故障"？
+
+> 提示：想想 Zookeeper 在这个集群里起了什么作用。
+
+<!--
+这两题考你对 HBase 定位与架构的理解。第一题：客户端要找到一条数据，先联系 **Zookeeper** 拿到 ROOT_ 目录所在位置，再据此找到 .META. 表位置，最后从 .META. 表查到目标数据落在哪个 Region Server——这就是"三级定位"。第二题：因为引入了 **Zookeeper**，它会通过选举保证集群里同时只有一个 Master，并实时监控 Region Server 上下线；一旦 Master 挂了，Zookeeper 会推动选出新的 Master 顶上。所以 Master 不再是"唯一且不可替代"的单点。答出这两条，HBase 的整体框架你就通了。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 6 章，自检。
 -->
 
 ---

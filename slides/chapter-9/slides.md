@@ -66,6 +66,30 @@ class: compact
 class: compact
 ---
 
+## 先理解：表、列簇、列，到底谁套谁
+
+这三者容易混，用"房子"来比喻就不乱了：
+
+- **表（Table）**：整栋**大楼**
+- **列簇（Column Family）**：大楼里的**一层**（或一个大区）。同一层的东西会"就近存放"，便于一起读
+- **列（Column）**：这一层里的**一个房间/一件东西**（如"姓名"")
+- **行（Row）**：**A 户 / B 户**这样按"行键"划分的一户人家，它的东西可以跨越好几个列簇
+
+**完整地址** = `行键(row) + 列簇:列(family:column)`
+
+**重点**：列簇是**物理存储的分组**，建表时就要定好且**多了不好改**——所以列簇要提前规划，别乱加。
+
+<!--
+管理 HBase 前，先把"表、列簇、列"的关系理清，否则改起来会迷糊。我们用一个房子比喻：整张表就是整栋大楼；列簇是大楼里的"一层"，同层的东西会挨着放、方便一起读；列则是这层里的一个房间或一件东西。而"行"是某户人家（按行键标识），这户人可以同时拥有好几层的东西。所以定位一个数据，就是"哪户人家的哪一层、哪件东西"。特别要记住：列簇是**物理层面**的分组，建表就要定好，且通常不好改——所以列簇必须提前想清楚，不能随手加。理解了这点，后面的表管理操作就顺理成章了。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 9.1 节，基础。
+-->
+
+---
+class: compact
+---
+
 ## 表：HTableDescriptor
 
 - 数据最终存储在一张或多张表中；用表的目的之一是**控制表中的所有列**以共享某些特性
@@ -260,17 +284,33 @@ HBaseAdmin 还能对集群进行管理，包含查看集群状态、执行表级
 | --- | --- |
 | `checkHBaseAvailable(conf)` | 验证客户端能否与 HBase 集群通信 |
 | `getClusterStatus()` | 查询集群状态信息 |
-| `closeRegion(regionName, hostAndPort)` | 关闭特定 region |
 | `flush(tableName)` | 将 region 数据刷写到磁盘 |
 | `compact(tableName)` / `majorCompact(tableName)` | 合并文件 / 后台队列合并 |
 | `split(tableName[, splitPoint])` | 拆分 region 或整表 |
+
+<!--
+**[带读]** 集群管理的工具按用途分组最好记。这一页是"查看/数据整理"类：checkHBaseAvailable 测连通性、getClusterStatus 拿全集群状况；flush 把内存数据强制刷盘、compact 触发文件合并（major 更彻底）、split 手动切分 region——常在"表太大、数据卡内存、要调分布"时手动干预。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 9.2 节。
+-->
+
+---
+class: compact easy-table-sm
+---
+
+## 集群管理：region 与停机
+
+| 方法 | 描述 |
+| --- | --- |
+| `closeRegion(regionName, hostAndPort)` | 关闭特定 region |
 | `assign(region, force)` / `unassign(region, force)` | region 上线 / 下线 |
 | `move(region, destRegion)` | 把 region 移到目标服务器 |
 | `balanceSwitch(boolean)` / `balancer()` | 开关 / 执行负载均衡 |
 | `shutdown()` / `stopMaster()` / `stopRegionServer(host)` | 关闭集群 / master / region 服务器 |
 
 <!--
-**[带读]** 集群管理的方法非常实用，运维场景几乎都会用到。先说状态类：getClusterStatus 拿到全集群状况，checkHBaseAvailable 测连通性。再说表级任务：flush 把内存数据强制刷盘，compact 触发合并（minor/major，major 更大更彻底），split 手动切分 region——这些常常是"表太大了、数据卡在内存、要调整分布"时的手动干预。region 类操作：assign/unassign 控制一个 region 上线还是下线，move 把它挪到别的服务器，balancer 做负载均衡。结尾的 shutdown、stopMaster、stopRegionServer 则是关机操作，shutdown 最彻底。分清这些操作是查看、是负载调整、还是停机，是管理 HBase 的基本功。
+**[带读]** 这一页是"region 调整与停机"类。assign/unassign 控制一个 region 上线还是下线，move 把它挪到别的服务器，balancer 做负载均衡——这些常用于某台机器负载过高时。结尾的 shutdown、stopMaster、stopRegionServer 是关机操作，shutdown 最彻底。分清"查看 / 调整负载 / 停机"三类，是管理 HBase 的基本功。
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 9.2 节。
@@ -309,6 +349,27 @@ for (ServerName server : status.getServers()) {       // 迭代每台服务器
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 9.2 节。
+-->
+
+---
+class: compact
+---
+
+## 想一想（自检）
+
+**问题 1**：想删除一张表，通常的操作顺序是什么？为什么？
+
+> 提示：注意"启用状态"的限制。
+
+**问题 2**：一次发现某台 Region Server 负载特别高、其他机器很闲，你会用 HBaseAdmin 的哪些方法来调节？
+
+> 提示：想想"移动 region"和"负载均衡"。
+
+<!--
+这两题把"表管理"和"集群管理"都考到了。第一题：删除表的正规顺序是**先禁用（disableTable）→ 再删除（deleteTable）**。因为在启用状态下，HBase 不允许删表或改结构，必须先禁用让表"停下来"，才能安全操作。第二题：可以用 **move** 把这台机器上的某些 region 移到其他机器，或直接用 **balancer()** 触发负载均衡算法，让它自动重新分配 region，达到各机器均衡。能答出这些，说明你已经具备管理 HBase 表和集群的基本动手能力了。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 9 章，自检。
 -->
 
 ---

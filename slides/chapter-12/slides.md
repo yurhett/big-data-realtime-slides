@@ -67,6 +67,32 @@ class: compact
 class: compact
 ---
 
+## 先理解：为什么还需要"更高一层的抽象"
+
+上一章我们用原始 Storm 写程序，会发现要操心很多"琐碎又容易错"的事：
+
+- 每条消息都要**手动锚定、手动 ack/fail**，否则会丢或重
+- 想做"每个单词计数且不丢不重"，得**自己管理状态、处理重试**
+- 代码写起来**繁琐、易错**
+
+**Trident 帮你把这些打包**：它让你**像写 SQL / Pig 那样**描述"我要算什么"
+
+- 你只关心：分组、聚合、过滤、连接（业务逻辑）
+- **状态管理、容错、精确一次**这些麻烦事，由 Trident **自动搞定**
+
+**比喻**：原始 Storm 像"手动拧螺丝"，Trident 像"用电动工具"——活更轻松，结果还更可靠。
+
+<!--
+为什么原始 Storm 已经很好了，还要有 Trident？因为你自己写 Storm 时，会发现大量精力花在"跟框架打交道"上：每条消息要手动锚定、手动应答，否则会丢或重；想做精确一次的计数，得自己管理状态、处理重试。这些很容易出错。Trident 的价值就是"把这些打包起来"——它让你像写 SQL 或 Pig 一样，直接描述"我要把单词分组、计数、过滤"，而状态、容错、精确一次这些麻烦事全自动搞定。打个比方：原始 Storm 像手动拧螺丝，Trident 就像用电动工具，活更轻松、结果还更稳。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 12 章，基础。
+-->
+
+---
+class: compact
+---
+
 ## Trident 综述
 
 - 以**实时计算**为目标的高阶抽象：高吞吐（每秒百万级消息）+ 低延迟分布式查询 + 有状态流式处理
@@ -114,9 +140,11 @@ class: compact
 
 ## Trident 以 batch 处理
 
-Trident 把输入 stream 转换成 **batch** 处理（每批数千到数百万 tuple），从而复用成熟的批处理语义（groupby、join、aggregation），并把批量读写与跨 batch 聚合落存储。
+Trident 把输入 stream 转换成 **batch** 处理（每批数千到数百万 tuple），从而复用成熟的批处理语义（groupby、join、aggregation）。
 
-![batch 的拆分](./assets/figures/batch-split.png){fit="contain" position="center" max-height="44vh"}
+![batch 的拆分](./assets/figures/batch-split.png){fit="contain" position="center" max-height="40vh"}
+
+- **读图**：原始句子流被拆成若干 **Batch**（Batch 1/2/3…），每批是一个 tuple 集合
 
 <!--
 **[看图]** 这张图解释了 Trident 的一项核心设计：**按 batch 处理**。看左边，原始的句子流其实就是一句句的文本；Trident 把它们拆成若干小批。图中右下方的 Batch 1、Batch 2、Batch 3 就是这样一批批的 tuple。为什么按批？因为这样就能复用成熟的批处理语义（groupby、join、aggregation），还能把一批的读、写攒起来批量执行，大幅提升性能。可以说，batch 是把"流"驯化成"可批处理"的桥梁。
@@ -249,7 +277,9 @@ class: compact
 
 Trident topology 会被编译成尽可能高效的 Storm topology：**只有需要重新分配（repartition）时**才通过网络发送 tuple（如 groupby 或 shuffle）。
 
-![Trident topology](./assets/figures/trident-topology.png){fit="contain" position="center" max-height="46vh"}
+![Trident topology](./assets/figures/trident-topology.png){fit="contain" position="center" max-height="40vh"}
+
+- **读图**：逻辑上的 Trident 流——spout → each → groupBy → persistentAggregate → stateQuery → sum，像一张抽象数据流图
 
 <!--
 **[看图]** 先看第一张：逻辑上的 Trident topology——spout、each、groupBy、persistentAggregate、stateQuery、sum 等等，像一个高度抽象的数据流图。它描述的是"要算什么"，而不关心底层怎么并行。
@@ -264,7 +294,9 @@ class: compact
 
 ## Trident 编译成 Storm topology
 
-![Storm topology](./assets/figures/storm-topology-compiled.png){fit="contain" position="center" max-height="46vh"}
+![Storm topology](./assets/figures/storm-topology-compiled.png){fit="contain" position="center" max-height="40vh"}
+
+- **读图**：逻辑节点被展开成具体 **Spout/Bolt** 组合；只有**需要重排数据**处（grouping/partition）才走网络，其余在本地流水线完成
 
 <!--
 **[看图]** 再看第二张：它编译成底层 Storm topology 后的样子——每个逻辑节点被展开成具体的 Spout/Bolt 组合。关键点在于：图里那些**需要跨节点重排数据**的地方（grouping、partition）才产生网络传输，其余都在本地流水线里完成。所以 Trident 看起来是高度抽象的批处理 API，跑起来却是高效的分布式执行。
@@ -394,10 +426,9 @@ class: compact
 
 ## 群聚与流分组操作
 
-- **aggregate**：在每个 batch 上独立做全局聚合；用 CombinerAggregator 会先局部聚合再全局；persistentAggregate 对**所有 batch** 聚合并存 state
-- **groupBy**：先对指定字段做 partitionBy（同字段值进同一分区），再在各分区内按字段值分组；在分组流上聚合结果存入以分字段为 key 的 MapState
+- 下图：分区里的 tuple 先**按字段值（如 z）partitionBy 分区、再在分区内分组**；groupBy 后聚合结果按分字段为 key 存 MapState；aggregate 则做全局聚合
 
-![groupBy 操作过程](./assets/figures/groupby-process.png){fit="contain" position="center" max-height="34vh"}
+![groupBy 操作过程](./assets/figures/groupby-process.png){fit="contain" position="center" max-height="36vh"}
 
 <!--
 **[看图]** 这张图讲 groupBy 的过程。看左边的分区，每个 partition 里放着一批 tuple，都有 x、y、z 字段；经过 groupBy 后，数据按字段值（比如 z）重新组织，同一 z 值的 tuple 被归到同一个 partition 的同一个 group 里。其实就是"先按值分区，再在分区内分组"。groupBy 之后你通常要做什么？聚合——但注意，在分组流上聚合，是**每个 group 各自聚合**，而不是整个 batch 一起。比如按单词分组，每个单词一个 group，各自计数。这样，流式计算的"分组计数"就水到渠成了。
@@ -473,14 +504,13 @@ class: compact
 
 ## Spout 与 State 的组合
 
-![Spout 和 State 结合实现一次处理](./assets/figures/spout-state-matrix.png){fit="contain" position="center" max-height="40vh"}
+![Spout 和 State 结合实现一次处理](./assets/figures/spout-state-matrix.png){fit="contain" position="center" max-height="46vh"}
 
-- **Transactional state**：存 txid + value，能实现 exactly-once，但只能配 transactional spout
-- **Opaque transactional state**：存 value + prevValue + txid，容错最强，但**多存储信息**
-- **Non-transactional state**：存储最少，但无法实现 exactly-once
+- **读图**：行＝Spout 三种类型，列＝State 三种类型，单元格 Yes/No 表示能否 **exactly-once**
+- 只有"事务级 Spout 配对应 State"（Transactional / Opaque）才行；opaque 容错最强但要**多存一条 prevValue**
 
 <!--
-**[看图]** 这张矩阵图把 Spout 和 State 的搭配说得清清楚楚。看行是 Spout 的三种类型，列是 State 的三种类型，单元格里的 Yes/No 表示能不能实现 exactly-once。只有两条交叉点亮了 Yes：transactional spout + transactional/opaque state，以及 opaque spout + opaque state。换句话说，你想做到精确一次，就必须搭配对应的事务级 state。而 opaque 组合容错最强（能扛源节点丢失），代价是 state 要多存一个 prevValue。左下角的 non-transactional 都标 No。所以你的选择本质是：**容错性 vs 存储开销**之间的权衡。
+**[看图]** 这张矩阵图把 Spout 和 State 的搭配说得很清楚：行是 Spout 的三种类型，列是 State 的三种类型，单元格里的 Yes/No 表示能否实现 exactly-once。只有两条交叉点亮 Yes：transactional spout + transactional/opaque state，以及 opaque spout + opaque state。想做到精确一次，必须搭配对应的事务级 state。opaque 组合容错最强（能扛源节点丢失），代价是 state 要多存一个 prevValue。左下角的 non-transactional 都标 No。**
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 12.3 节。
@@ -630,6 +660,27 @@ class: compact
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 12.4 节。
+-->
+
+---
+class: compact
+---
+
+## 想一想（自检）
+
+**问题 1**：Trident 凭什么能做到"每条消息被处理且只被处理一次（exactly-once）"？说出它靠的两个原则。
+
+> 提示：想想"txid"和"批次顺序"。
+
+**问题 2**：想让"相同的单词永远进同一个分区"来聚合，Trident 里应使用哪种重分区操作？
+
+> 提示：回忆按字段哈希分配的那一个。
+
+<!--
+这两个问题考查 Trident 的核心。第一题：Trident 做到精确一次，靠两条原则——①每个 **batch 有一个唯一且不变的事务 id（txid）**，重试时 txid 不变；②**状态严格按 batch 顺序更新**。这样在存状态时可比较 txid，相同就跳过、不同才更新，避免重复计算。第二题：要让相同单词进同一个分区，用 **partitionBy**（按指定字段的哈希值 mod 分区数分配），这样相同字段值的 tuple 一定进同一分区，是后续 groupBy 聚合的前提。答出这两点，你就抓住了 Trident"可靠又高效"的精髓。
+
+[Sources]
+- 吴斌，《大数据实时计算与应用》第 12 章，自检。
 -->
 
 ---
