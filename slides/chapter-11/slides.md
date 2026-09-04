@@ -140,7 +140,7 @@ class: compact
 
 ## DRPC 服务工作机制
 
-- 把 Storm 的分布式计算能力应用到**"请求—响应"范式**；topology 用 **DRPCSpout** 接收调用、算完由 **ReturnResults** Bolt 凭唯一 id 送回结果
+- 把 Storm 的分布式计算能力应用到<strong>"请求—响应"范式</strong>；topology 用 **DRPCSpout** 接收调用、算完由 **ReturnResults** Bolt 凭唯一 id 送回结果
 
 ![DRPC 的工作流机制](./assets/figures/drpc-workflow.png){fit="contain" position="center" max-height="34vh"}
 
@@ -248,7 +248,7 @@ class: compact
 
 ## 启动 Storm 后台进程
 
-Storm 是**快速失败（fail-fast）**系统，可随时停止、重启后正确恢复，故不在进程内保存状态；即使 Nimbus 或 supervisor 重启，运行中的 topologies 不受影响。
+Storm 是<strong>快速失败（fail-fast）</strong>系统，可随时停止、重启后正确恢复，故不在进程内保存状态；即使 Nimbus 或 supervisor 重启，运行中的 topologies 不受影响。
 
 ```bash
 # 主控节点：启动 nimbus（后台运行）

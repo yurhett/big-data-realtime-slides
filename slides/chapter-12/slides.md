@@ -98,7 +98,7 @@ class: compact
 - 以**实时计算**为目标的高阶抽象：高吞吐（每秒百万级消息）+ 低延迟分布式查询 + 有状态流式处理
 - 类似 **Pig / Cascading** 这类高级批处理工具，提供 joins、aggregations、grouping、functions、filters
 - 提供专门原语，在数据库或其他存储上做**有状态的递增式处理**
-- 提供**一致性**与**有且仅有一次（exactly-once）**语义，使编写 topology 更轻松
+- 提供<strong>一致性</strong>与<strong>有且仅有一次（exactly-once）</strong>语义，使编写 topology 更轻松
 
 <!--
 **[核心]** Trident 的定位一句话概括：把"流式处理"用"批处理的思维方式"来表达。你写的是一个个的流操作——group、join、aggregate、filter——就像写 Pig 脚本。但它背后的执行是实时的。最值钱的是它能给你 exactly-once（精确一次）语义：每条消息保证被处理且只处理一次，而不用你自己去折腾锚定、事务这些细节。这意味着，Trident 把最头疼的可靠性问题，封装成了一个开箱即用的特性。

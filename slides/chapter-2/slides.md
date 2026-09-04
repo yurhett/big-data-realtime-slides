@@ -191,7 +191,7 @@ class: compact
 - 使用磁盘文件保存消息，采用类似 **WAL（Write Ahead Log）** 的机制做**顺序读写**，再定时批量写入磁盘
 - 消息读取基本是**顺序**的，符合 MQ 顺序读取、追加写的特性
 - 通过**批量消息传输**减少网络传输
-- 使用 Java 的**发送文件 + 零复制（zero-copy）**机制，减少从读文件到发送过程中的内存复制与内核/用户态切换
+- 使用 Java 的<strong>发送文件 + 零复制（zero-copy）</strong>机制，减少从读文件到发送过程中的内存复制与内核/用户态切换
 - 性能测试显示基本达到 **I/O 的复杂度**
 
 <!--
@@ -246,7 +246,7 @@ class: compact
 ![多数据中心拓扑结构](./assets/figures/multi-datacenter-topology.png){fit="contain" position="center" max-height="44vh"}
 
 - **读图**：上面两个 **Live Datacenter** 各有自己的 Kafka 集群，**互不直接通信**
-- 下面 **Aggregate Kafka** 通过**镜像（mirroring）**扮演源集群 consumers，把多个机房数据聚到一处，再喂给离线 Hadoop
+- 下面 **Aggregate Kafka** 通过<strong>镜像（mirroring）</strong>扮演源集群 consumers，把多个机房数据聚到一处，再喂给离线 Hadoop
 
 <!--
 **[看图]** 那么问题来了：一家公司往往不止一个数据中心，Kafka 要不要跨机房？Kafka 的做法是让一个集群不横跨多个数据中心，而是通过**镜像（mirroring）**把数据同步过去。大家看这张图，上面的两个“Live Datacenter”各自有自己的 Kafka 集群，它们之间并不直接通信；下面那个“Aggregate Kafka”集群，通过镜像扮演源集群 consumers 的角色，把多个数据中心的数据集中到一个地方，再喂给离线 Hadoop。这样一个集群就能聚合多个机房的数据。
