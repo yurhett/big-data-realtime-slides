@@ -123,6 +123,20 @@ class: compact
 <!--
 **[核心]** Kafka 如何在不丢和不重之间给出承诺？它的答案是——只要消息被 committed 了，且写它的那个分区所在的副本 broker 还活着，数据就丢不了。这就把“不丢”建立在了副本活性之上。同时它也很诚实：producer 在网络错误时无法判断提交发生在错误前还是后，这个问题仍未完美解决。所以 Kafka 不强迫所有人用最高级别，而是让 producer 自己选：等提交确认、完全异步、或只等 leader 确认，三种粒度按需取。
 
+---
+### 🎙️ 演讲者详细补充：从发明者视角看 Committed 机制与网络不确定性
+
+#### 1. 发明者视角的 Committed 哲学：
+- **定义**：一条消息当且仅当被该分区动态集合 **ISR（In-Sync Replicas）中的所有存活副本** 全部追加进本地日志时，才被判定为 Committed。
+- **高水位游标（HW，High Watermark）**：Kafka 不需要为每条消息打状态标记，Committed 状态在物理上对应一个单调递增的 64 位整数指针 HW。凡 Offset < HW 的消息均已提交。
+- **读隔离性**：Consumer 永远只能读取到 Offset < HW 的 Committed 消息，绝不会读到仅写入 Leader 但未同步的脏数据，从而杜绝了 Leader 切换时的幻读或数据倒流。
+
+#### 2. “网络错误无法判断提交发生在错误前还是后”到底是什么意思？
+网络通信是双向往返，Producer 抛出网络超时报错时，存在两种完全相反的底层现实（两军问题）：
+- **情况 A（发生在提交前）**：Producer 发送的数据包在半路丢包，Broker 从未见过这条消息，**消息未提交**。如果 Producer 不重试，数据就永久丢失了。
+- **情况 B（发生在提交后）**：消息已顺利到达 Broker、落盘并同步进 ISR（已 Committed），但 Broker 返回给 Producer 的 ACK 确认包在半路丢了。如果 Producer 以为失败并触发重试，就会写入两条一模一样的消息，**导致数据重复**。
+- **后期解决方案**：Kafka 在 0.11+ 引入了幂等性（Idempotence），给每个 Producer 分配全局唯一 PID，并为发送批次附带单调递增 Sequence Number。即使情况 B 发生重试，Broker 识别到相同的 PID + Sequence 也会自动去重并补发 ACK，彻底消除了该不确定性。
+
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 4.1 节。
 -->
@@ -157,6 +171,40 @@ class: compact
 
 <!--
 **[核心]** 那“精确一次”怎么实现？书上给了两条思路。一条是两阶段提交，分两次把 offset 提交，第一次在保存后、第二次在处理成功后。但更聪明的做法是：把 offset 和“处理结果”打包在一起写。什么叫打包？比如你用 Hadoop ETL 处理消息，处理完的结果和这条消息的 offset 一起落到 HDFS 里。这样一来，offset 和它对应的处理结果要么同时在、要么同时不在，就不会出现“算了但没记账”或“记了账却没算”的错位，一致性自然就保证了。
+
+---
+### 🎙️ 演讲者详细补充：Kafka 2PC（两阶段提交）底层运转机制与架构时序
+
+#### 1. 为什么流处理跨节点需要 2PC？
+在“读取输入 Topic ➔ 实时计算 ➔ 写入输出 Topic ➔ 提交消费 Offset”链路中，写输出消息与提交 offset 属于跨分区操作。若无事务协调，中间崩溃必将导致“重复写入”或“消息丢失”。Kafka 借助 **Transaction Coordinator（事务协调者，运行在 Broker 内部）** 和 **`__transaction_state` 内部主题** 落地了 2PC。
+
+#### 2. 2PC 在 Kafka 中的时序图与生命周期：
+```text
+Producer (客户端)            Transaction Coordinator           __transaction_state      Target Topic (目标数据分区)
+       │                                │                              │                       │
+       │── 1. 开启事务 (BeginTx) ──────> │                              │                       │
+       │── 2. 发送计算数据与消费Offset ───────────────────────────────────────────────────────> │ (写入本地日志,
+       │                                │                              │                       │  标记为未决消息)
+       │── 3. commitTransaction() ────> │                              │                       │
+       │    【阶段一：Prepare 阶段】     │── 4. 写入 PREPARE_COMMIT ───>│                       │
+       │                                │      (决议持久化落盘)         │                       │
+       │                                │                                                      │
+       │    【阶段二：Commit 阶段】      │── 5. 发送 Commit Marker 控制标记 ────────────────────> │ (写入 Commit Marker,
+       │                                │                                                      │  LSO推进, 数据对下游可见)
+       │                                │── 6. 写入 COMPLETE_COMMIT ──>│                       │
+       │<── 7. 返回提交成功 ─────────────│                                                      │
+```
+
+#### 3. 关键执行细节解析：
+- **阶段一（Prepare 阶段）**：
+  - 数据消息在执行期间就已经写入了目标 Broker 的物理磁盘，但被标记为“事务未决”。配置为 `read_committed` 的下游消费者因 **LSO（Last Stable Offset）** 水位限制，无法读取这批消息。
+  - Producer 发起 commit 后，Coordinator 在 `__transaction_state` 写入 `PREPARE_COMMIT`。**一旦此记录落盘，整个事务在逻辑上就判定为必定成功**（即使 Coordinator 瞬间崩溃重启，也会继续走完流程）。
+- **阶段二（Commit 阶段）**：
+  - Coordinator 向所有目标数据分区发送 **Commit Marker（提交控制标记）**。
+  - 分区 Broker 写入 Marker，向前推进 LSO 水位，数据瞬间对下游 `read_committed` 消费者全量可见。
+  - 最终 Coordinator 将事务状态标记为 `COMPLETE_COMMIT`，事务闭环。
+- **异常回滚**：若 Prepare 前超时或失败，Coordinator 会向各分区广播 **Abort Marker**，下游消费者读到后在内存中直接丢弃未决数据。
+- **架构升华**：Kafka 2PC 没有传统关系型数据库的长事务死锁问题，它利用**只追加写入（Append-only Log）**与控制标记位点（Marker），以极高的吞吐量换取了分布式端到端的精确一次保证。
 
 [Sources]
 - 吴斌，《大数据实时计算与应用》第 4.1 节。
