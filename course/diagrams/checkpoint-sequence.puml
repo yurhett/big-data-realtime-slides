@@ -1,0 +1,20 @@
+@startuml
+hide footbox
+skinparam backgroundColor white
+skinparam defaultFontName PingFang SC
+skinparam defaultFontSize 25
+skinparam shadowing false
+skinparam sequenceArrowColor #1D4ED8
+skinparam participantBackgroundColor #EFF6FF
+skinparam participantBorderColor #1D4ED8
+participant "协调器" as C
+participant Source as S
+participant "处理任务" as T
+database "检查点存储" as K
+C -> S : 触发 n
+S -> T : 旧记录 → Barrier n
+T -> K : 持久化 n 的状态视图
+K --> T : 写入成功
+T --> C : ACK n
+note over C,K #F0FDF4 : 协调器收齐所有必要确认后，检查点 n 才完成
+@enduml

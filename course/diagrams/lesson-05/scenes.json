@@ -1,0 +1,71 @@
+{
+  "barrier-inject": {
+    "consumed": [],
+    "sum": 0,
+    "barA": 360,
+    "barB": 360,
+    "blocked": false
+  },
+  "barrier-a-first": {
+    "consumed": [
+      "E01",
+      "E02",
+      "E03"
+    ],
+    "sum": 10000,
+    "barA": 650,
+    "barB": 360,
+    "blocked": true
+  },
+  "barrier-wait": {
+    "consumed": [
+      "E01",
+      "E02",
+      "E03"
+    ],
+    "sum": 10000,
+    "barA": 650,
+    "barB": 360,
+    "blocked": true,
+    "focus": "E04"
+  },
+  "barrier-b-record": {
+    "consumed": [
+      "E01",
+      "E02",
+      "E03",
+      "E04"
+    ],
+    "sum": 14000,
+    "barA": 650,
+    "barB": 360,
+    "blocked": true,
+    "focus": "E04"
+  },
+  "barrier-aligned": {
+    "consumed": [
+      "E01",
+      "E02",
+      "E03",
+      "E04"
+    ],
+    "sum": 14000,
+    "barA": 650,
+    "barB": 650,
+    "blocked": true,
+    "snapshot": true
+  },
+  "barrier-resume": {
+    "consumed": [
+      "E01",
+      "E02",
+      "E03",
+      "E04"
+    ],
+    "sum": 14000,
+    "barA": 980,
+    "barB": 980,
+    "blocked": false,
+    "snapshot": true
+  }
+}

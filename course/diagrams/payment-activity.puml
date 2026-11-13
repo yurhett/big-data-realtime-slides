@@ -1,0 +1,21 @@
+@startuml
+skinparam backgroundColor white
+skinparam defaultFontName PingFang SC
+skinparam defaultFontSize 22
+skinparam shadowing false
+skinparam activityBackgroundColor #EFF6FF
+skinparam activityBorderColor #1D4ED8
+skinparam ArrowColor #1D4ED8
+start
+if (status = PAID ?) then (成功)
+ if (eventId 已见 ?) then (已见)
+  :跳过重复投递;
+ else (未见)
+  :记录 eventId;
+  :更新用户累计金额;
+ endif
+else (非成功)
+ :跳过此记录;
+endif
+stop
+@enduml

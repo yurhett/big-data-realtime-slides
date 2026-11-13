@@ -1,0 +1,27 @@
+@startuml
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam defaultFontName PingFang SC
+skinparam defaultFontSize 25
+skinparam shadowing false
+skinparam classBackgroundColor #EFF6FF
+skinparam classBorderColor #1D4ED8
+skinparam ArrowColor #1D4ED8
+hide methods
+left to right direction
+class "用户 User" as U {
+ userId: 用户编号
+}
+class "订单 Order" as O {
+ orderId: 订单编号
+ createdAt: 业务时间
+}
+class "支付事件 PaymentEvent" as P {
+ eventId: 事件身份
+ eventTimeMs: 毫秒时间
+ amountCents: 整数分
+ status: 支付状态
+}
+U "1" -- "0..*" O : 下单
+O "1" -- "0..*" P : 产生
+@enduml

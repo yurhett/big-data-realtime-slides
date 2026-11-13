@@ -1,0 +1,19 @@
+@startuml
+!pragma layout smetana
+left to right direction
+skinparam backgroundColor white
+skinparam defaultFontName PingFang SC
+skinparam defaultFontSize 22
+skinparam shadowing false
+skinparam componentStyle uml2
+skinparam componentBackgroundColor #EFF6FF
+skinparam componentBorderColor #1D4ED8
+skinparam ArrowColor #1D4ED8
+component Client
+component "JobManager\n协调作业执行" as JM
+component "TaskManager" as TM
+component "外部日志 / 数据库" as IO
+Client --> JM : 提交作业
+JM <--> TM : 调度、检查点\n状态、确认
+IO <--> TM : 业务记录
+@enduml

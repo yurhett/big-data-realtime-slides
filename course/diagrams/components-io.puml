@@ -1,0 +1,21 @@
+@startuml
+!pragma layout smetana
+top to bottom direction
+skinparam backgroundColor white
+skinparam defaultFontName PingFang SC
+skinparam defaultFontSize 25
+skinparam shadowing false
+skinparam componentStyle uml2
+skinparam componentBackgroundColor #EFF6FF
+skinparam componentBorderColor #1D4ED8
+skinparam ArrowColor #1D4ED8
+component Client
+component JobManager as JM
+component TaskManager as TM
+component Kafka
+component MySQL
+Client --> JM : 提交作业
+JM -down-> TM : 调度任务
+Kafka -right-> TM : 读取支付记录
+TM -right-> MySQL : 写入用户金额
+@enduml

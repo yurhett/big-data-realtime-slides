@@ -1,0 +1,266 @@
+{
+  "version": "2026-11-11",
+  "description": "教学构造数据；金额单位分，时间戳以课堂起点为0。",
+  "events": [
+    {
+      "eventId": "E01",
+      "orderId": "O101",
+      "userId": "A",
+      "eventTimeMs": 1000,
+      "arrival": 1,
+      "amountCents": 3000,
+      "status": "PAID",
+      "partition": 0,
+      "offset": 100
+    },
+    {
+      "eventId": "E02",
+      "orderId": "O102",
+      "userId": "B",
+      "eventTimeMs": 4000,
+      "arrival": 2,
+      "amountCents": 5000,
+      "status": "PAID",
+      "partition": 1,
+      "offset": 200
+    },
+    {
+      "eventId": "E04",
+      "orderId": "O104",
+      "userId": "C",
+      "eventTimeMs": 9000,
+      "arrival": 3,
+      "amountCents": 4000,
+      "status": "PAID",
+      "partition": 1,
+      "offset": 201
+    },
+    {
+      "eventId": "E03",
+      "orderId": "O103",
+      "userId": "A",
+      "eventTimeMs": 7000,
+      "arrival": 4,
+      "amountCents": 2000,
+      "status": "PAID",
+      "partition": 0,
+      "offset": 101
+    },
+    {
+      "eventId": "E05",
+      "orderId": "O105",
+      "userId": "B",
+      "eventTimeMs": 12000,
+      "arrival": 5,
+      "amountCents": 6000,
+      "status": "PAID",
+      "partition": 0,
+      "offset": 102
+    },
+    {
+      "eventId": "E09",
+      "orderId": "O109",
+      "userId": "A",
+      "eventTimeMs": 6000,
+      "arrival": 6,
+      "amountCents": 2500,
+      "status": "FAILED",
+      "partition": 1,
+      "offset": 202
+    },
+    {
+      "eventId": "E07",
+      "orderId": "O107",
+      "userId": "C",
+      "eventTimeMs": 18000,
+      "arrival": 7,
+      "amountCents": 8000,
+      "status": "PAID",
+      "partition": 0,
+      "offset": 103
+    },
+    {
+      "eventId": "E06",
+      "orderId": "O106",
+      "userId": "A",
+      "eventTimeMs": 16000,
+      "arrival": 8,
+      "amountCents": 1000,
+      "status": "PAID",
+      "partition": 1,
+      "offset": 203
+    },
+    {
+      "eventId": "E08",
+      "orderId": "O108",
+      "userId": "B",
+      "eventTimeMs": 23000,
+      "arrival": 9,
+      "amountCents": 3000,
+      "status": "PAID",
+      "partition": 1,
+      "offset": 204
+    },
+    {
+      "eventId": "E03",
+      "orderId": "O103",
+      "userId": "A",
+      "eventTimeMs": 7000,
+      "arrival": 10,
+      "amountCents": 2000,
+      "status": "PAID",
+      "partition": 0,
+      "offset": 104
+    },
+    {
+      "eventId": "E10",
+      "orderId": "O110",
+      "userId": "C",
+      "eventTimeMs": 24000,
+      "arrival": 11,
+      "amountCents": 5000,
+      "status": "PENDING",
+      "partition": 0,
+      "offset": 105
+    },
+    {
+      "eventId": "E11",
+      "orderId": "O111",
+      "userId": "B",
+      "eventTimeMs": 25000,
+      "arrival": 12,
+      "amountCents": 3500,
+      "status": "CANCELLED",
+      "partition": 1,
+      "offset": 205
+    }
+  ],
+  "windows": {
+    "sizeMs": 10000,
+    "slideMs": 5000,
+    "outOfOrderMs": 2000,
+    "allowedLatenessMs": 5000,
+    "arrivals": [
+      {
+        "id": "A",
+        "eventTimeMs": 1000,
+        "amountCents": 3000
+      },
+      {
+        "id": "B",
+        "eventTimeMs": 4000,
+        "amountCents": 5000
+      },
+      {
+        "id": "D",
+        "eventTimeMs": 9000,
+        "amountCents": 4000
+      },
+      {
+        "id": "C",
+        "eventTimeMs": 7000,
+        "amountCents": 2000
+      },
+      {
+        "id": "E",
+        "eventTimeMs": 12000,
+        "amountCents": 6000
+      },
+      {
+        "id": "L",
+        "eventTimeMs": 8000,
+        "amountCents": 2500
+      },
+      {
+        "id": "G",
+        "eventTimeMs": 18000,
+        "amountCents": 8000
+      },
+      {
+        "id": "X",
+        "eventTimeMs": 6000,
+        "amountCents": 1000
+      },
+      {
+        "id": "F",
+        "eventTimeMs": 16000,
+        "amountCents": 1000
+      },
+      {
+        "id": "H",
+        "eventTimeMs": 23000,
+        "amountCents": 3000
+      }
+    ]
+  },
+  "runtime": {
+    "sourceRate": 6000,
+    "paidFraction": 0.75,
+    "parallelism": 4,
+    "perTaskCapacity": 1000,
+    "sinkCapacity": 5000,
+    "seconds": 20,
+    "hotKeyRate": 3000
+  },
+  "joins": {
+    "boundMs": 5000,
+    "orders": [
+      [
+        "O1",
+        1000
+      ],
+      [
+        "O2",
+        3000
+      ],
+      [
+        "O3",
+        7000
+      ],
+      [
+        "O4",
+        10000
+      ]
+    ],
+    "payments": [
+      [
+        "O1",
+        4000,
+        3000
+      ],
+      [
+        "O2",
+        9000,
+        5000
+      ],
+      [
+        "O3",
+        11000,
+        2000
+      ]
+    ]
+  },
+  "checkpoint": {
+    "sumCents": 14000,
+    "count": 4,
+    "nextOffsets": {
+      "0": 102,
+      "1": 202
+    },
+    "beforeFailure": [
+      "E05",
+      "E06"
+    ],
+    "replay": [
+      "E05",
+      "E06",
+      "E07",
+      "E08"
+    ]
+  },
+  "rescale": {
+    "maxParallelism": 8,
+    "oldParallelism": 2,
+    "newParallelism": 4
+  }
+}

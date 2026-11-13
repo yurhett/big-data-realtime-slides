@@ -1,0 +1,10 @@
+@import '../course.css';
+
+/* Same reference canvas and title line; a mechanism occupies one continuous scene. */
+.lesson05 .story-figure { margin: 0 0 16px; width: 100%; }
+.lesson05 .story-figure img { display: block; width: 100%; height: 395px; object-fit: contain; margin: 0; }
+.lesson05 .story-figure + ul { margin-top: 8px; }
+.lesson05 li + li { margin-top: 10px; }
+.lesson05 .outline li { color: #64748b; }
+.lesson05 .outline li.current { color: #1d4ed8; font-weight: 600; }
+.lesson05 .story-figure img[src*="checkpoint-sequence"] { height: 400px; }

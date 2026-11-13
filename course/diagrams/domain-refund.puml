@@ -1,0 +1,21 @@
+@startuml
+!pragma layout smetana
+left to right direction
+skinparam backgroundColor white
+skinparam defaultFontName PingFang SC
+skinparam defaultFontSize 25
+skinparam shadowing false
+skinparam classBackgroundColor #EFF6FF
+skinparam classBorderColor #1D4ED8
+skinparam ArrowColor #1D4ED8
+hide methods
+class "订单 Order" as O {
+ orderId: 订单编号
+}
+class "退款事件 RefundEvent" as R {
+ refundId: 退款身份
+ eventTimeMs: 业务时间
+ amountCents: 整数分
+}
+O "1" -- "0..*" R : 产生退款
+@enduml

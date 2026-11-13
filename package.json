@@ -9,12 +9,16 @@
   "scripts": {
     "dev": "easy-slides dev",
     "present": "easy-slides present",
-    "build": "easy-slides build",
+    "build": "easy-slides build && node scripts/build-course-index.mjs && python3 scripts/verify-course.py --built && python3 scripts/verify-lessons-01-04.py && python3 scripts/verify-lesson-05.py",
+    "preview": "node scripts/preview.mjs",
     "check": "easy-slides check",
-    "export": "easy-slides export"
+    "export": "easy-slides export",
+    "check:course": "python3 scripts/verify-course.py && python3 scripts/verify-lessons-01-04.py && python3 scripts/verify-lesson-05.py",
+    "diagrams": "python3 scripts/render-diagrams.py && python3 scripts/course_story.py && python3 scripts/render-lesson-05.py",
+    "author:course": "python3 scripts/author-lessons-01-04.py && python3 scripts/author-lesson-05.py && pnpm diagrams"
   },
   "devDependencies": {
-    "@easy-slides/cli": "git+https://git.xaria.tk/yulonger/easy-slides.git",
+    "@easy-slides/cli": "git+https://git.526677.xyz/yulonger/easy-slides.git",
     "wrangler": "4.127.1"
   }
 }

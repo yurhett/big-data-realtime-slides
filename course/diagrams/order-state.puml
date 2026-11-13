@@ -1,0 +1,16 @@
+@startuml
+!pragma layout smetana
+left to right direction
+skinparam backgroundColor white
+skinparam defaultFontName PingFang SC
+skinparam defaultFontSize 23
+skinparam shadowing false
+skinparam stateBackgroundColor #EFF6FF
+skinparam stateBorderColor #1D4ED8
+skinparam ArrowColor #1D4ED8
+[*] --> PENDING : create / 注册定时器
+PENDING --> PAID : pay [在时间范围内]\n/ emitPaid，删除定时器
+PENDING --> EXPIRED : timer [未支付]\n/ emitExpired
+PAID --> PAID : 重复pay / 跳过
+EXPIRED --> EXPIRED : pay / audit
+@enduml

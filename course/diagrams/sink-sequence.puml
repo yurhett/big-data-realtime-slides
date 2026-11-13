@@ -1,0 +1,25 @@
+@startuml
+skinparam backgroundColor white
+skinparam defaultFontName PingFang SC
+skinparam defaultFontSize 22
+skinparam shadowing false
+skinparam sequenceArrowColor #1D4ED8
+skinparam participantBackgroundColor #EFF6FF
+skinparam participantBorderColor #1D4ED8
+participant "协调器" as C
+participant "Sink Task" as S
+database "外部事务存储" as D
+S -> D : 写入事务 Tn
+activate D
+S -> D : 预提交 Tn
+D --> S : 准备完成
+deactivate D
+S --> C : ACK n
+alt 检查点 n 完成
+ C -> S : 完成通知 n
+ S -> D : 提交 Tn
+ D --> S : 结果可见
+else 完成前故障
+ S -> D : 恢复：中止未提交事务
+end
+@enduml
