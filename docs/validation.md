@@ -1,5 +1,30 @@
 # 五次课图解重构检查记录
 
+## 2026-11-20：全五讲正文 Fact 提纲化与引导重构
+
+参照 `/Users/yulonger/MyGit/distributed-computing-slides` 的“短事实提纲 + 问题牵引 + 对比表”页面质感，重构第 1–5 讲全部 260 页幻灯片正文（`scripts/author-lessons-01-04.py`、`scripts/author-lesson-05.py`、`slides/story-course.css`、`slides/lesson-05/style.css`）：
+
+- **正文字体腔与压缩句清理**：废除“分号拼长句 + 书面过渡动词”的摘要体写法，统一转为 `**关键概念**：简短事实` 的单行提纲，消除行尾孤字与生硬翻译腔。
+- **引导提问与结构化对比**：在各讲关键机制转折与练习页引入 `> 问题：...` / `> 检验：...` / `> 思考：...` 引导框，并将第 5 讲《输出协议要匹配业务对象》整理为三行对比表。
+- **版面防溢出与渲染修复**：将图示容器高度由 `395px` 调整为 `350px`（Mermaid `345px`）以留出底部呼吸空间，修复 `scripts/course_story.py` 在 Python 3.11 下的 f-string 引号兼容性并消除 `exchange` 图例折行警告；BrowserOS neo 实测第 2 讲 50 页全部零纵向溢出。
+- **校验结果**：`pnpm author:course`、`pnpm check:course`、`pnpm check`（五讲 0 警告）及 `git diff --check` 全部通过。
+
+## 2026-11-19：内容深度与课堂讲稿双升级
+
+结合 `/Users/yulonger/MyGit/distributed-computing-slides`（第 9、10 章）、`/Users/yulonger/MyGit/big-data-intro-slides`（第 1–10 章）的讲授质感，以及 CMU 15-721、ETH Zurich DSPA、*Streaming 101/102* 等公开课程精华，对 `scripts/author-lessons-01-04.py` 与 `scripts/author-lesson-05.py` 完成全量内容与措辞升级并重新生成五讲共 260 页幻灯片：
+
+- **理论与架构深度补齐**：第 1 讲补充批流引擎 vs 有界/无界数据正交区分与 Lambda 架构对比、Dataflow WWWH 四维组合；第 2 讲补充 Spark Stage 阻塞 vs Flink Pipeline 流水线、Operator DAG vs RDD Lineage、Chaining 免 SerDe/缓冲拷贝收益、Slot 隔离托管内存而不硬隔离 CPU；第 3 讲补充 Watermark 作为完整性与延迟权衡的启发式断言、多分区 `min` 与 Idle Source 恢复规则、Discarding/Accumulating/Retracting 对下游二次聚合的语义差异；第 4 讲补充托管状态 vs 自建 `HashMap`、`HashMapStateBackend` vs `EmbeddedRocksDBStateBackend` 取舍、Regular Join vs Interval Join 状态界线及流表二象性；第 5 讲补充放弃物理时钟同步而采用 Chandy–Lamport/ABS 的原因、Effectively-Once 澄清，以及 2PC 可见延迟绑定检查点周期与 `transaction.timeout.ms` / `read_committed` 约束。
+- **去 AI 味与课堂口吻修复**：彻底重写约 33 页冒号清单/白皮书腔讲稿，消除 `闭环`、`规约`、`锚定`、`摄取`、`虚增`、`不是……而是`、`因此，`、悬置破折号 `——`，并清理 `本题`、`本专项`、`题设`、`上一页/下一页` 等应试与翻页播报表达；保持五讲全部数值算例（`32000`、`14000`、`7000`、`26000`、`39000`、水位线序列等）与所有图示资产完整一致。
+- **校验结果**：`python3 scripts/author-lessons-01-04.py && python3 scripts/author-lesson-05.py` 全量重生成成功；`pnpm check:course`（`verify-course.py`、`verify-lessons-01-04.py`、`verify-lesson-05.py`）全部通过；`pnpm check` 静态检查通过，五讲均无纵向溢出警告。
+
+## 2026-11-13：五讲措辞修订
+
+按用户提供的 Anti-Defensive Writing 规则检查五讲260页，修订191页的正文或课堂讲稿，并同步更新生成源码和4幅机制图的文字。删除重复澄清、说教式提醒与先否定再解释的表达，将其改为对象、动作、参数和结果。课堂提问、数值反例、概念区分与绘图步骤按教学作用保留。
+
+技术前提随对应机制保留：Slot共享与资源容量、多输入活跃集合、水位线计算与迟到清理、TTL刷新和过期可见性、业务终态政策、一致性切面、快照完成条件，以及幂等与事务恢复要求。Dataflow累积模型和Flink触发实现分别说明；自定义提前输出写明扩展触发逻辑的要求。
+
+独立复算、内容检查、五讲构建和发布结构检查通过。BrowserOS neo测量260页，未发现文字越界或失效图片；对32个可见文字变化页面重新截图并逐页查看。五讲开发版分别检查新讲稿及翻页后的对应关系。证据位于忽略目录`tmp/anti-defensive-review/`，包括修改记录、截图、页面审计与检查日志。
+
 检查日期：2026-11-13。本轮将第1至4讲按第5讲图解标准重构：50、50、51、55页，共206页；连同第5讲54页，全课程260页。未远程发布。
 
 ## 第1至4讲内容与教学走读

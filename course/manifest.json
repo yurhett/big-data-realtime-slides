@@ -6,7 +6,7 @@
     "kind": "cover",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -16,7 +16,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -26,7 +26,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -36,7 +36,7 @@
     "kind": "content",
     "sources": [
       "https://www.omg.org/spec/UML/2.5.1/PDF",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -46,7 +46,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -65,7 +65,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -75,7 +75,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -85,7 +85,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -95,7 +95,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -114,7 +114,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -124,7 +124,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -134,7 +134,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -144,7 +144,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -154,7 +154,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -164,7 +164,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -174,7 +174,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -184,7 +184,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -194,7 +194,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -204,7 +204,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -214,7 +214,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -224,7 +224,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -234,7 +234,7 @@
     "kind": "exercise",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -244,7 +244,7 @@
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -263,7 +263,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -273,7 +273,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -283,7 +283,7 @@
     "kind": "content",
     "sources": [
       "https://www.omg.org/spec/UML/2.5.1/PDF",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -293,7 +293,7 @@
     "kind": "exercise",
     "sources": [
       "https://www.omg.org/spec/UML/2.5.1/PDF",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -303,7 +303,7 @@
     "kind": "answer",
     "sources": [
       "https://www.omg.org/spec/UML/2.5.1/PDF",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -313,7 +313,7 @@
     "kind": "content",
     "sources": [
       "https://www.omg.org/spec/UML/2.5.1/PDF",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -323,7 +323,7 @@
     "kind": "content",
     "sources": [
       "https://www.omg.org/spec/UML/2.5.1/PDF",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -333,7 +333,7 @@
     "kind": "exercise",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -343,7 +343,7 @@
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -358,21 +358,21 @@
   {
     "lesson": 1,
     "page": 37,
-    "title": "有界与无界描述输入是否结束",
+    "title": "有界与无界描述输入，批与流描述引擎",
     "kind": "content",
     "sources": [
-      "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
+      "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/"
     ]
   },
   {
     "lesson": 1,
     "page": 38,
-    "title": "批处理先确定输入，再运行计算",
+    "title": "批处理先固定输入，再运行计算",
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -382,7 +382,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -391,8 +391,8 @@
     "title": "同一输入与口径的批流核对",
     "kind": "content",
     "sources": [
-      "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
+      "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/"
     ]
   },
   {
@@ -402,7 +402,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -413,7 +413,7 @@
     "sources": [
       "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -424,7 +424,7 @@
     "sources": [
       "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -434,7 +434,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -444,7 +444,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -454,7 +454,7 @@
     "kind": "exercise",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -464,7 +464,7 @@
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -474,7 +474,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -484,7 +484,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -494,7 +494,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -504,7 +504,7 @@
     "kind": "cover",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -514,7 +514,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -702,7 +702,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -822,7 +822,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -832,7 +832,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -842,7 +842,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -852,7 +852,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -872,7 +872,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -883,7 +883,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -903,7 +903,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -913,7 +913,7 @@
     "kind": "exercise",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -923,7 +923,7 @@
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -933,7 +933,7 @@
     "kind": "exercise",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -943,7 +943,7 @@
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -971,7 +971,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1003,7 +1003,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/time/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1014,7 +1014,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/time/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1029,21 +1029,21 @@
   {
     "lesson": 3,
     "page": 6,
-    "title": "窗口专项输入与金额",
+    "title": "窗口演进的八条基础输入",
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
     "lesson": 3,
     "page": 7,
-    "title": "两条迟到专项记录",
+    "title": "两条迟到对比记录",
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1062,7 +1062,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1081,7 +1081,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1091,7 +1091,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1101,7 +1101,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1111,7 +1111,7 @@
     "kind": "exercise",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1121,7 +1121,7 @@
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1151,7 +1151,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/event-time/generating_watermarks/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/../api/java/org/apache/flink/api/common/eventtime/BoundedOutOfOrdernessWatermarks.html",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1171,7 +1171,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/event-time/generating_watermarks/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1182,7 +1182,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/event-time/generating_watermarks/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1193,7 +1193,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/event-time/generating_watermarks/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1204,7 +1204,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/event-time/generating_watermarks/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1281,7 +1281,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1291,7 +1291,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1301,7 +1301,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1311,7 +1311,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1321,7 +1321,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1331,7 +1331,7 @@
     "kind": "exercise",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1341,7 +1341,7 @@
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1361,7 +1361,7 @@
     "sources": [
       "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1372,7 +1372,7 @@
     "sources": [
       "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1383,7 +1383,7 @@
     "sources": [
       "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1394,7 +1394,7 @@
     "sources": [
       "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1405,7 +1405,7 @@
     "sources": [
       "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1427,7 +1427,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/time/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1439,7 +1439,7 @@
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/event-time/generating_watermarks/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1451,18 +1451,18 @@
       "https://research.google/pubs/the-dataflow-model-a-practical-approach-to-balancing-correctness-latency-and-cost-in-massive-scale-unbounded-out-of-order-data-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
     "lesson": 3,
     "page": 48,
-    "title": "方案答案：版本更新与补核形成闭环",
+    "title": "方案答案：版本更新与补核协同核对",
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/windows/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1504,7 +1504,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1514,7 +1514,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1563,7 +1563,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/ops/state/state_backends/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1582,7 +1582,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1592,7 +1592,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1603,7 +1603,7 @@
     "sources": [
       "https://www.omg.org/spec/UML/2.5.1/PDF",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1634,7 +1634,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/process_function/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1644,7 +1644,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1654,7 +1654,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1664,7 +1664,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1674,7 +1674,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1684,7 +1684,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1694,7 +1694,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1715,7 +1715,7 @@
     "kind": "exercise",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1725,7 +1725,7 @@
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1744,7 +1744,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1782,7 +1782,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/joining/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1792,7 +1792,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/joining/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1802,7 +1802,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/joining/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1812,7 +1812,7 @@
     "kind": "exercise",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/joining/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1822,7 +1822,7 @@
     "kind": "answer",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/operators/joining/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1832,7 +1832,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1851,7 +1851,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1862,7 +1862,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/sql/queries/overview/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1873,7 +1873,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/sql/queries/overview/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1904,7 +1904,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/libs/cep/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1914,7 +1914,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/libs/cep/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1944,7 +1944,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1955,7 +1955,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1966,7 +1966,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1977,7 +1977,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -1999,7 +1999,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/table/concepts/dynamic_tables/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -2010,7 +2010,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -2021,7 +2021,7 @@
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -2052,7 +2052,7 @@
     "kind": "content",
     "sources": [
       "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/",
-      "教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。"
+      "教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。"
     ]
   },
   {
@@ -2100,9 +2100,11 @@
   {
     "lesson": 5,
     "page": 5,
-    "title": "故障专项的八条支付记录",
+    "title": "八条支付记录的分区与 Offset",
     "kind": "content",
     "sources": [
+      "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/",
+      "https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/checkpointing/",
       "教学构造数据：course/data/cases.json；本讲 A/B 使用独立 Offset，金额单位为分。"
     ]
   },

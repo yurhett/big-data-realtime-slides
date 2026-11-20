@@ -22,11 +22,11 @@ layout: cover
 把计算展开为能运行、能观测的系统
 
 <!--
-同学们，上一讲我们把支付记录变成了可核对的用户累计额。现在门店越来越多，一位统计员处理不过来，能不能把工作分给两台机器？我们要说明谁接收作业、谁决定分工、同一用户怎样找到自己的历史，以及处理较慢的阶段怎样影响整条线。今天我们从逻辑图一步步展开到子任务、线程、进程和机器，最后根据具体吞吐数据写出一份能运行、能观测的部署方案。
+同学们，上一讲我们把支付记录变成了可核对的用户累计额。现在门店越来越多，一台机器扛不住每秒几千笔流水，怎么把这套计算稳妥地铺到多台机器上跑？相比传统批处理和微批系统按阶段攒批、阻塞落盘的做法，Flink 原生流引擎直接让上游算子把记录流水线式地推向下游。这节课我们从逻辑图一步步展开到子任务、Task、Slot、进程和物理机器，再顺着反压和热点键把性能瓶颈算个明白。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -37,15 +37,18 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/views.svg" alt="同一作业的逻辑、执行与放置：机制与数据图" /></figure>
 
-- 逻辑图说明算什么；物理图说明几个实例怎样交换数据；部署图说明放在哪里。
-- 本讲并行专项输入已按事件身份去重，保留过滤与按用户累计。
+<strong>逻辑视图</strong>：算子连接与计算语义
+
+<strong>物理视图</strong>：并发子任务与数据交换方式
+
+<strong>部署视图</strong>：进程、Slot 与物理节点布局
 
 <!--
-大家看同一份作业的三个镜头。最上层是过滤后累计这件事，中间把累计展开成四个同时工作的实例，最下层再把实例安排到两台机器。这三个视角描述同一业务的计算逻辑、并行分工和运行位置。本讲的并行专项采用已按事件身份去重的输入，任务计数覆盖Source、Filter、Aggregate和Sink。以后看到架构图，请先判断它画的是计算关系、执行连接，还是实际放置，再解释一个框究竟是什么对象。
+大家用三个镜头看同一份作业。最上面一层是逻辑算子图，只关心业务规则；中间把累计展开成四个并行实例，看清数据流在网络上怎么路由；最下面才决定把这些实例塞进哪两台物理机器。本讲示例假设输入已经完成事件身份去重，让我们能把注意力集中在任务个数、线程切换与资源安排上。以后看任何分布式系统的架构图，都要先分清它在画逻辑、物理执行还是部署位置。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -56,11 +59,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/os-levels.svg" alt="程序、进程、线程与机器：机制与数据图" /></figure>
 
-- <strong>进程</strong>是运行中的程序及其资源；<strong>线程</strong>是进程内执行工作的一条路径。
-- 一台机器可运行多个进程；一个 TaskManager 进程内可有多个执行线程。
+<strong>机器</strong>：提供 CPU 核与物理内存
+
+<strong>TaskManager 进程</strong>：独立 JVM 进程，管理资源与 Slot
+
+<strong>线程</strong>：进程内执行具体 Task 的调度路径
 
 <!--
-我们先把几个容易混在一起的词放稳。程序是写好的工作规则，进程是它在机器上真正运行起来的一份实例，拥有自己的工作内存。进程里面还可以有多条执行路径，叫线程。图中一台工作机器运行一个TaskManager进程，进程里有多条执行任务的线程。请大家依次指机器、进程、线程和Slot的边界，分别说出承载程序、运行程序、执行任务和分配资源的作用。后面每当我们数方框，都先说清数的是哪一层。
+把操作系统的基本概念落到 Flink 集群里。最底层是物理机器或容器，上面运行着一个个 JVM 进程，工作进程就叫 TaskManager。真正逐条读消息、更新状态的执行单位，是进程里面的线程。为了防止多个任务互相抢爆内存，TaskManager 把自身资源切分成若干个 Slot（槽位），再让算子链跑在 Slot 对应的线程里。容量规划时千万别把线程数、Slot 数和机器数混为一谈。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -76,7 +82,7 @@ layout: section
 <ol class="outline"><li class="current">运行进程与职责</li><li>并行子任务与数据交换</li><li>资源分配与部署</li><li>瓶颈、积压与方案设计</li></ol>
 
 <!--
-接下来先认识谁负责组织、谁真正处理记录。大家沿两种不同箭头看：一类提交计划、分配任务和报告状态，另一类搬运支付记录。沿控制路径看谁组织执行，沿数据路径看谁处理金额；再按职责判断各组件故障时的影响范围。
+先看清集群里的角色分工。大家沿两种不同颜色的路径看：控制交互负责提交作业、分配 Slot 和协调检查点；数据通道负责在工作节点之间高速流水线搬运业务记录。分清这两条路径，后面排查故障和性能问题才不会找错门。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/
@@ -90,11 +96,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/architecture.svg" alt="Client 提交，协调器安排，工作进程执行：机制与数据图" /></figure>
 
-- Client 准备并提交作业；JobManager <strong>协调调度、检查点与恢复</strong>。
-- TaskManager 执行任务，缓冲并交换记录；业务数据沿工作任务流动。
+<strong>Client</strong>：编译作业图并提交给集群
+
+<strong>JobManager</strong>：全局调度、检查点协调与故障恢复
+
+<strong>TaskManager</strong>：流水线（Pipeline）执行任务并跨节点交换数据
 
 <!--
-请大家顺着上面的提交箭头走，Client把作业计划交给JobManager。接下来JobManager安排由哪些工作进程执行各个任务，并组织后续检查点与故障恢复。真正一条条读取、判断和相加的是下面的TaskManager。看业务记录那条线，它沿工作任务之间的数据通道流动。遇到性能问题时，我们就能按职责检查：任务处理能力看TaskManager上的执行，调度与恢复看JobManager。
+看这张主从协同架构。左边的 Client 把我们写好的计算代码编译成逻辑图与执行图，提交给中间的协调器 JobManager；JobManager 挑出可用的 TaskManager，把子任务派下去，并在运行期间定期组织检查点快照。跟 MapReduce 或 Spark 每算完一个 Stage 就得等上一阶段全部写完 Shuffle 才放行不同，Flink 在 TaskManager 之间建立长连接，记录像水流一样边算边向下游传递，这也是流引擎低延迟的根基。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -108,11 +117,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/client.svg" alt="提交作业之后，Client 可以断开：机制与数据图" /></figure>
 
-- Client 提供计算计划；作业提交成功后，集群负责后续运行。
-- 分离模式下 Client 退出，已提交作业仍由集群执行。
+<strong>提交阶段</strong>：Client 将作业计划与代码发往 JobManager
+
+<strong>运行阶段</strong>：集群接管后续调度与容错，Client 可退出（Detached 模式）
 
 <!--
-假设老师在笔记本上提交了统计作业，随后把笔记本合上，门店营业额会不会立即停止计算？在分离提交的模式下，作业由集群持续运行，Client完成提交后可以退出。它已经把计划交给集群，TaskManager仍在执行。请大家把“提交工具”和“运行系统”区分开。这里的前提是分离模式提交到集群；本机运行时，任务生命周期由本机进程决定。
+假设老师在自己的笔记本电脑上把门店统计作业提交到了机房集群，随即合上笔记本回家，门店营业额会停下来吗？不会。在分离提交模式下，Client 把执行计划和作业代码交给 JobManager 后，它的使命就结束了；后续的调度、任务拉起和故障重启全由集群接管。平时写方案时要注意把“提交客户端”和“常驻运行的流集群”剥离开。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -126,11 +136,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/coordinator.svg" alt="协调职责为什么需要全局视角：机制与数据图" /></figure>
 
-- 调度决定任务与可用资源的对应；恢复决定相关任务从何处继续。
-- 检查点需要组织多个参与者形成<strong>对应的恢复边界</strong>。
+<strong>全局调度</strong>：掌握全集群空闲 Slot 分布
+
+<strong>统一容错</strong>：协调所有并行任务的恢复边界
+
+> 问题：为什么 Flink 有算子 DAG，却不靠血缘重算恢复？
 
 <!--
-大家想一想，两台工作机器能各自随便挑一半记录就开始吗？它们还需要共同知道哪些子任务已经启动，哪一份资源可用，哪次检查点已经成功。如果其中一个失败，相关任务需要按对应的状态和输入边界恢复。这些决定跨越多个任务，所以由协调角色组织。协调维护整个作业的执行关系，各任务继续负责自己的记录处理。第五讲会详细画检查点，今天先把“谁组织这件事”放在架构中的正确位置。
+同学们可能会问，两台工作机器能不能自己商量着跑，干嘛非要一个 JobManager 协调？想两件事就明白了：第一，任务调度要看全集群哪台机器还有空 Slot；第二，第五讲做容错时，所有并行节点必须在同一逻辑切面上完成快照，出故障时由协调器统一喊停、重新拉起并对齐边界。顺便对比 Spark：Spark 靠 RDD 血缘（Lineage）记下转换步骤以便重算丢掉的分片，而连续流作业会跑几个月甚至几年，血缘链会无限拉长，所以 Flink 选择周期性做快照并由协调器统一恢复。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -144,11 +157,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/internal.svg" alt="JobManager 内部的管理角色：机制与数据图" /></figure>
 
-- Dispatcher 接收作业；ResourceManager 管理 Slot 资源。
-- 每个 JobMaster 管理一个作业；这些角色位于 JobManager 内部。
+<strong>Dispatcher</strong>：接收作业提交并拉起作业管理器
+
+<strong>ResourceManager</strong>：统一调度全集群 Slot 资源
+
+<strong>JobMaster</strong>：一对一负责单个作业的执行与检查点
 
 <!--
-我们把JobManager这个协调进程放大，看见三类职责。Dispatcher负责接收作业并为它启动管理者；ResourceManager关心可用的Slot资源；每个作业的JobMaster跟踪这份作业的执行。这三个名称对应JobManager内部的管理角色，机器与进程边界见部署图。比如同时有两份作业，就可能有分别管理它们的JobMaster。理解名称时，把它们各自负责什么放在第一位，再去看具体部署怎样组织这些角色。
+把 JobManager 放大看，它内部其实包含三个各司其职的小管家：Dispatcher 负责对外接单，每收到一个新作业就帮它拉起一位专属的 JobMaster；ResourceManager 掌管全集群所有 TaskManager 汇报上来的 Slot 资源池；而 JobMaster 只盯自己这一份作业，向资源管家申请 Slot 并协调它的检查点。这样一来，哪怕集群同时跑着十个实时作业，各自的执行进度也不会乱套。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -162,11 +178,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/worker.svg" alt="TaskManager 的工作现场：机制与数据图" /></figure>
 
-- 执行任务读取输入、更新本地工作状态，并把输出送往下游。
-- 数据暂时处理不过来时，先占用通道缓冲，随后可能传导反压。
+<strong>数据路径</strong>：输入缓冲 → 任务线程（读写托管状态）→ 输出缓冲
+
+<strong>反压传导</strong>：下游缓冲满时停发信用额度，逐段放慢上游读取
 
 <!--
-现在看真正干活的一侧。输入记录先进入缓冲，任务线程取出记录，执行过滤或累计，再把输出交给下游。每次加法的当前值由执行任务使用的状态后端保存；JobManager负责协调检查点与恢复。请问，输入突然快很多，记录会立刻消失吗？通常先在队伍和缓冲中等待；如果下游持续吃不动，等待就会反过来影响上游发送。我们后面会用每秒条数与积压把这条因果链算出来。
+走进真正干活的 TaskManager 内部。工作线程从输入网络缓冲里拎出一条支付记录，顺着算子逻辑判断、读写本地托管状态，再把结果塞进输出缓冲发给下游。如果下游突然变慢，消费不了这么快，上游的输出缓冲很快就会顶满。Flink 通道里采用基于信用的流控机制，下游没空位就不发“信用额度”，上游只好放慢读取，这就是待会儿我们要定量计算的反压。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -180,11 +197,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/figures/components.svg" alt="控制流与数据流走不同路径：机制与数据图" /></figure>
 
-- 提交、调度与确认属于控制交互；支付记录属于数据交换。
-- 组件图分别标注控制、数据与持久化箭头，按图例读各条连线。
+<strong>控制路径</strong>：提交、调度、心跳与检查点确认（经过 JobManager）
+
+<strong>数据路径</strong>：业务事件在外部存储与 TaskManager 之间直连传输
 
 <!--
-请大家看标准UML组件图。带组件标记的矩形说明系统由哪些模块组成，旁边的箭头说明模块之间有什么依赖或交互。Client到协调器的箭头写提交作业，工作进程和协调器之间写调度、状态与确认，外部日志和工作进程之间才是业务记录。我们不让一根没有说明的箭头同时承担三种含义。请沿数据流找一次支付从哪里进入，再沿控制流找谁决定任务启动，就能读出同一系统的两类关系。
+用标准的 UML 组件图把刚才的架构关系钉清楚。Client 到 JobManager 是提交作业，JobManager 和 TaskManager 之间走的是调度命令、心跳和检查点确认；真正的业务支付记录从上游日志直接走进 TaskManager，算完直接写往外部库，绝不经过 JobManager。遇到“为什么数据库收不到新支付”时，沿着数据路径查；遇到“为什么任务挂了没重启”，沿着控制路径查。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -199,11 +217,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/component-steps.svg" alt="组件图的符号与绘制步骤：机制与数据图" /></figure>
 
-- 组件画模块职责；依赖箭头从使用方指向所依赖方，标注依赖内容。
-- 先列职责，再连交互；部署在哪台机器留到部署图说明。
+<strong>列模块</strong>：拆分接入、计算、输出与协调四类组件
+
+<strong>连交互</strong>：依赖箭头指向被依赖方，线上写明具体动作
+
+<strong>划边界</strong>：组件图只管职责依赖，物理位置留给部署图
 
 <!--
-画组件图时，先列接入、计算、输出和协调管理模块，再连接它们提供或使用的接口。第二步说明谁调用谁、谁依赖谁，再用有文字的连线表达。标准依赖箭头指向被依赖的一方，而通信图中双向交互也要写明各方向的含义。请大家拿自己的图反问一句：删掉某根箭头的文字，别人会不会误以为这条线在传支付金额？若会，就把动作标清楚。组件图让职责边界清晰，部署图再解决实际位置。
+画组件图有一个检查小窍门：先框出接入、计算、输出和协调四类模块，再拉箭头写上交互动作。画完以后把每根箭头上的文字遮住一半问自己：会不会被人误以为支付流水绕道去了 JobManager？只要把“调度/ACK”和“读写支付记录”标清楚，模块边界就立住了。至于哪些进程摆在哪台物理服务器上，留给后面的部署图回答。
 
 [Sources]
 - https://www.omg.org/spec/UML/2.5.1/PDF
@@ -216,12 +237,14 @@ class: course story-course
 ---
 ## 组件图练习：加入日志与结果库
 
-- 业务输入来自 Kafka，用户结果写到 MySQL。
-- 画 Client、JobManager、TaskManager、Kafka、MySQL 五类组件。
-- 分别标出提交、调度、读支付、写结果；指出金额经过哪条路径。
+<strong>外部模块</strong>：输入端 Kafka，输出端 MySQL
+
+<strong>绘制目标</strong>：画出 Client、JobManager、TaskManager、Kafka、MySQL 五类组件
+
+> 检验：拿一笔支付事件从头指到尾，确认它不经过 JobManager
 
 <!--
-现在请大家把外部系统拆成两个具体模块。Kafka保存待处理日志，MySQL保存供查询的结果，不能用一个含糊的数据库方框代替两种职责。画完以后，先拿一笔支付沿读写箭头走一遍，再拿一次任务启动沿控制箭头走一遍。请特别检查有没有把支付记录绕到JobManager中计算。如果有，说明控制关系和业务数据关系混在一起了。组件图说明模块依赖，下一部分的部署图再安排机器数量与运行位置。
+请同学们动手把外部存储补进这张组件图。Kafka 负责持久化输入日志，MySQL 负责保存可查询的用户结果，不要把它们画成一个含糊的“外部数据库”。画完后拿一笔支付事件从头指到尾，确认它只经过 Kafka → TaskManager → MySQL，绝对没有拐进 JobManager。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -236,11 +259,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/figures/components-io.svg" alt="组件图答案：记录沿工作进程计算：机制与数据图" /></figure>
 
-- Kafka→TaskManager→MySQL 是本例业务记录路径。
-- Client→JobManager 提交；JobManager 与 TaskManager 协调任务。
+<strong>业务数据链</strong>：Kafka → TaskManager → MySQL
+
+<strong>控制协调链</strong>：Client → JobManager ↔ TaskManager
 
 <!--
-答案图中有两条可以分别读出的链。第一条是业务数据，从Kafka进入执行任务，经过计算再写MySQL；第二条是控制，Client提交，协调器调度，工作进程回报状态。大家现在遮住说明文字，请同桌凭图分别复述一次。如果某根线无法判断用途，就需要补标注。还要记住，Kafka和MySQL在这里是系统职责的例子，不表示任何接入它们的写法就自动具有精确一次，输出协议要到第五讲再完整设计。
+对照屏幕核对自己的组件图。业务数据线从 Kafka 进入 TaskManager 执行过滤和累计，再写入 MySQL；控制线则由 Client 发起，经过 JobManager 协调各 TaskManager。这样画清楚了模块职责，至于重启或重放时 MySQL 会不会重复写，我们在第五讲再配齐专门的出口协议。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -257,7 +281,7 @@ layout: section
 <ol class="outline"><li>运行进程与职责</li><li class="current">并行子任务与数据交换</li><li>资源分配与部署</li><li>瓶颈、积压与方案设计</li></ol>
 
 <!--
-角色清楚以后，我们让同一算子同时开工。请大家保持业务规则不变，只改变执行实例数量。关键问题是：同一个用户的不同事件能否找到同一份状态？如果画出四个累计方框，却让相同用户随机进入不同方框，虽然并行了，结果却已经被拆散。接下来沿路由箭头检查这个条件。
+组件职责分清以后，我们把逻辑算子图展开成并发的物理执行图。并行化最关键的约束是不能算错账：凡是要按用户累计的状态，同一个 userId 的所有记录必须准确落到同一个累计子任务里。下面我们把子任务、数据交换和算子链逐一拆开看。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/
@@ -271,11 +295,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/parallelism.svg" alt="并行度决定算子展开几个实例：机制与数据图" /></figure>
 
-- <strong>并行度（Parallelism）</strong>是一个算子的并行子任务数量。
-- Sum 并行度 4：A0、A1、A2、A3 各处理分到自己的键。
+<strong>并行度（Parallelism）</strong>：单个算子展开出的并发子任务数
+
+<strong>示例设置</strong>：Sum 并行度设为 4（A0–A3），各自负责分片内的用户键
 
 <!--
-一个逻辑Sum算子，现在展开成四个执行实例。它们执行相同的累计规则，但各自处理不同的一部分业务键。并行度四表示该算子展开为四个子任务；每个用户的记录仍归属于其中一个累计子任务。图里把Sum名字写在列顶，下面是四个编号实例，帮助大家把“同一种计算”与“执行它的几个实例”分开。接下来我们会给前后算子也指定并行度，再数整份作业到底有几个子任务。
+一个逻辑上的 Sum 算子，现在被设定为并行度 4，于是水平展开成 A0 到 A3 四个子任务。它们跑着一模一样的累加代码，各自掌管一部分用户的数据。这里一定要区分“同一种算子逻辑”和“并发执行它的多个实例”。接下来给整条流水线的四个算子都设上并行度，数清楚到底展开了多少个子任务。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -289,11 +314,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/physical.svg" alt="逻辑图展开为十个算子子任务：机制与数据图" /></figure>
 
-- Source 2、Filter 2、Aggregate 4、Sink 2，共 <strong>10 个算子子任务</strong>。
-- 物理图的边还要说明一对一连接或重新分区。
+<strong>子任务总数</strong>：Source(2) + Filter(2) + Aggregate(4) + Sink(2) = <strong>10 个</strong>
+
+<strong>通道连线</strong>：Source → Filter 一对一直传；Filter → Aggregate 按键重新分区
 
 <!--
-请大家按列数：Source两个、Filter两个、累计四个、输出两个，加起来十个。这个数字只回答算子子任务数量，后面形成算子链以后，执行线程数量可能更少。先看相邻两列，源和过滤并行度相同，可以一对一向下传；过滤到累计则要按用户键重新决定目的实例。物理执行图将算子展开为子任务，并标出子任务间实际的数据连接。
+顺着四列数一遍：2 个 Source、2 个 Filter、4 个 Aggregate、2 个 Sink，加起来一共 10 个算子子任务。相邻两列怎么连线？Source 和 Filter 都是 2 个，可以一对一直接往下传；Filter（2 个）到 Aggregate（4 个）不仅并行度变了，还要按 userId 重新分区归组，所以得画成全连接交叉线。物理执行图就是要把子任务个数和通道连接方式标明白。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -307,11 +333,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/key-route.svg" alt="keyBy 让同键记录进入同一份状态：机制与数据图" /></figure>
 
-- <strong>keyBy</strong>按键重新分区；本例示意路由 A→A0，B→A2，C→A3。
-- 相同键必须保持一致路由；具体编号由分区规则决定。
+<strong>keyBy</strong>：按业务键哈希路由，保证同键记录落入同一累计实例
+
+<strong>示例路由</strong>：用户 A → A0，用户 B → A2，用户 C → A3
 
 <!--
-大家沿A的两条记录看，它们来自不同上游，也必须送到同一个累计实例A0，否则各自只知道一部分金额。B送A2，C送A3，这些编号是本页给定的示意映射，真实系统用固定的分区规则决定。关键条件是同一个键在当前执行布局下进入同一份历史。请再问，keyBy是否把A的所有记录按事件时间排好？没有，它解决分区归属，时间排序和乱序仍要另行处理。
+看用户 A 的两笔支付 E01 和 E03，它们在 Source 可能分别落在不同分区里，但经过 keyBy 按 userId 路由后，两笔钱必须双双走进同一个累计实例 A0。B 固定去 A2，C 固定去 A3，实际引擎用哈希函数对键取模来保证一致性路由。这里顺便提醒一句：keyBy 只保证“同一个人的记录聚在一起”，并不负责把乱序的 7 秒和 9 秒重新按时间排好序。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -326,11 +353,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/split-key.svg" alt="随机分发会拆散同一用户的累计：机制与数据图" /></figure>
 
-- 反例：A 的 3000 进入 A0，2000 进入 A1，两边各自只见局部。
-- 按键路由后，两条在同一份状态中得到 <strong>5000 分</strong>。
+<strong>错误反例</strong>：A 的 3000 去 A0、2000 去 A1，两边各自只见局部状态
+
+<strong>正确前提</strong>：依赖全量同键历史的算子前，必须使用 <strong>keyBy</strong>
 
 <!--
-我们故意画一条错误路线。A的第一笔3000进入A0，第二笔2000进入A1，如果两边都直接对外声称自己就是用户A的完整累计额，就会得到两个不完整答案。错误来自同一组的历史分散到了不同累计实例。若要先局部再合并，必须明确增加一个按A重新汇总的阶段，不能把随机分散当作最终结果。keyBy让直接的按键状态计算有清晰归属，这是并行执行保持业务语义的重要条件。
+故意看一眼画错路由的后果。假如 Filter 到 Aggregate 用了轮询随机分发，用户 A 的 3000 分去了 A0，2000 分去了 A1，两边互不知道对方存在，对外都报自己的局部结果，账本立刻裂成两半。除非后续再显式接一层按 userId 的合并算子，否则凡是依赖全量同键历史的算子，前面都必须配 keyBy。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -345,11 +373,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/exchange.svg" alt="数据交换策略对应不同分发目的：机制与数据图" /></figure>
 
-- Forward 一对一传递；keyBy 按键；Rebalance 均摊记录；Broadcast 复制给所有下游。
-- 使用按键状态前，要保证分发策略满足同键归属。
+<strong>Forward</strong>：上下游并行度相同时一对一直传
+
+<strong>keyBy / Rebalance</strong>：按键聚拢状态 vs 无状态轮询均摊
+
+<strong>Broadcast</strong>：将控制或规则流复制一份发给所有下游
 
 <!--
-四种分发方式都可以画成箭头，但目的不同。一对一省去重新分发，适合上下游对应实例；按键把相同业务对象送到一起；均摊让记录轮流分散，适合不依赖同键历史的负载分配；广播则把一条配置复制给每个下游。请用一笔A支付测试，如果轮流均摊就可能拆开A的账，因此不能直接替代keyBy。所有实例都要使用的风控配置适合广播；支付明细则按键发送到负责该用户的累计实例。
+物理图里四种常见连接策略长得很像，背后的语义却差得很远。Forward 上下游并行度一致时点对点直传，省掉跨节点开销；keyBy 保证同键聚在一起；Rebalance 轮流把数据均摊给下游，适合无状态负载均衡，千万不能直接替 keyBy 干按用户求和的活；Broadcast 则把风控规则表复制一份塞给每个下游实例。选错连线策略，要么数据算错，要么网络白白翻倍。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -364,11 +395,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/chain.svg" alt="算子链把可相连子任务放入同一 Task：机制与数据图" /></figure>
 
-- 本例 Source 与 Filter 并行度同为 2，满足链化条件，合为 S0/F0、S1/F1。
-- 链内直接交接，减少线程间交接和缓冲开销；keyBy 处仍需交换。
+<strong>链化条件</strong>：Source(2) 与 Filter(2) 为 Forward 窄依赖
+
+<strong>核心收益</strong>：同线程直接调用，省去 <strong>SerDe 与缓冲拷贝</strong>
+
+<strong>断开边界</strong>：keyBy 需跨实例洗牌，算子链在此断开
 
 <!--
-大家把源和过滤两列合起来看。相同编号的两个子任务若满足链化条件，可以在同一个Task中连续执行，源读出一条就交给过滤，少一次线程间搬运。这叫算子链，并没有删除过滤逻辑，也没有把两笔支付合成一笔。到了keyBy处，记录可能需要送往别的累计实例，所以这个重新分区边界不能随意抹掉。请大家比较链化前后，业务规则没变，执行交接的组织方式变了。
+现在看一个非常关键的性能优化：Source 和 Filter 都是 2 个实例，中间是一对一的 Forward 窄依赖，满足链化条件。Flink 直接把 S0 和 F0 焊在同一个 Task 同一条线程里运行。这有什么真金白银的收益？S0 读出一条事件对象后，在线程栈里直接调用 F0 的过滤函数，**完全省掉了跨线程上下文切换、对象序列化反序列化（SerDe）和网络缓冲区拷贝**！到了 keyBy 这里必须重新洗牌路由，算子链也就在此断开。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -382,11 +416,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/task-count.svg" alt="十个算子子任务形成八个 Task：机制与数据图" /></figure>
 
-- 2 条 Source/Filter 链 + 4 个累计 Task + 2 个输出 Task = <strong>8 个 Task</strong>。
-- 本例每个 Task 由一个执行线程运行；子任务、Task 与线程要分别计数。
+<strong>任务总数</strong>：2 条 Source/Filter 链 + 4 个累计 Task + 2 个输出 Task = <strong>8 个 Task</strong>
+
+<strong>三层计数</strong>：10 个算子子任务 → 8 个 Task → 8 条执行线程
 
 <!--
-现在重新数。逻辑层仍有十个算子子任务，其中源与过滤按编号组成两条链，于是这两列只形成两个Task。再加四个累计Task和两个输出Task，总共八个Task。本例每个Task由一条线程执行，所以有八条执行线程。接下来分别数Task线程和Slot资源份额，看看八个Task怎样共享四个Slot。Slot负责资源分配，允许一定条件下的任务共享；线程才是具体执行路径。我们下一部分会把八个Task放进四个Slot。
+算子链一焊上去，我们重新清点数目。逻辑层展开的算子子任务依然是 10 个，但由于 S0/F0 和 S1/F1 各自合成了一条链，实际调度运行的 Task 变成了 2 + 4 + 2 = 8 个，对应 8 条执行线程。记住这个分层计数：10 个算子子任务、8 个 Task、8 条线程。待会儿我们还要把这 8 个 Task 塞进 4 个 Slot 里，层层对应才不会乱。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -400,15 +435,18 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/chain-vs-p.svg" alt="链化与并行度是两种调整：机制与数据图" /></figure>
 
-- 链化减少交接；增加并行度增加执行实例；两者对业务口径均应保持一致。
-- 验证算子链时，同时核对吞吐、同键历史和输出协议。
+<strong>算子链化</strong>：消除相邻算子交接开销，不增加并发实例
+
+<strong>提高并行度</strong>：增加实例数分摊负载，但无法拆散单一热点键
+
+<strong>底线核对</strong>：调优后仍须核对同键状态与最终用户结果一致
 
 <!--
-大家先说清两个旋钮。把Source和Filter连成链，是减少它们之间的搬运；把Sum从两份增加到四份，是增加同时处理不同键的实例。前者不自动创造四倍处理能力，后者也不保证每个用户的工作都能拆成四份。判断调整是否成功，除了每秒条数，还要核对用户金额、键归属与输出含义。A的完整累计历史是正确性条件，吞吐测试应与用户结果核对一起进行。
+工程里大家常把“调大并行度”和“算子链化”混为一谈，其实它们动的是两个不同的旋钮。链化是在不增加并发度的前提下，砍掉线程之间多余的搬运与序列化开销；提高并行度则是多招几个实例同时干活，但遇到像 keyBy 这种数据倾斜时，多招一倍实例也救不了那个最忙的键。每次调整完，既要看吞吐有没有涨，也要拿样本核对每个用户的累计额。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -417,12 +455,14 @@ class: course story-course
 ---
 ## 物理图练习：重新计数
 
-- Source 2、Filter 2、Aggregate 3、Sink 1；Source/Filter 满足链化条件。
-- 分别数算子子任务、Task、执行线程；画 keyBy 前后的连接。
-- 说明：是否能由 Task 数直接推出所需机器数？
+<strong>作业配置</strong>：Source=2、Filter=2、Aggregate=3、Sink=1（Source 与 Filter 满足链化）
+
+<strong>计算目标</strong>：列出算子子任务数、Task 数、线程数，并画出 keyBy 连线
+
+> 问题：仅凭 6 个 Task，能否直接算出需要几台物理机器？
 
 <!--
-请大家给一个新作业画物理图，先把四列展开，再按编号圈出两条源过滤链。请在纸上分三行列出算子子任务、合链后的Task和所需Slot。计算机器数量还需给出每台的资源与Slot，以及各Task的内存等需求，再按放置约束核算。图先让执行关系可见，具体资源安排还需要下一部分的条件。
+请同学们拿出一张纸练一练手。给定 Source=2、Filter=2、Aggregate=3、Sink=1，先把四列方框画开，再按编号把 S 和 F 链成两条，标出 keyBy 的全连接交叉线。数出算子子任务、Task 和执行线程各是多少。最后回答一个架构追问：光知道有 6 个 Task，够不够推导出我们需要买几台服务器？还缺哪些条件？
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -436,11 +476,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/physical-answer.svg" alt="计数答案：八个子任务，六个 Task：机制与数据图" /></figure>
 
-- 算子子任务：2+2+3+1=8；Task 与线程：2+3+1=6。
-- 同作业同 Slot Sharing Group 且资源可容纳时，最高并行度 3 对应 3 个 Slot。
+<strong>计数结果</strong>：8 个算子子任务 → <strong>6 个 Task</strong>（6 条执行线程）
+
+<strong>最小 Slot</strong>：同组共享且单 Slot 资源充足时，由最高并行度 <strong>3</strong> 决定
 
 <!--
-答案中两条源过滤链形成两个Task，累计三个，输出一个，总共六条执行线程。若同一作业使用同一Slot共享组，且资源确实容得下，可以用最高并行度三来推导这个例子至少需要的Slot数量。请把后半句条件一起读，不能把“所有作业都是三个Slot”当结论。机器数还取决于每台提供多少可用Slot以及资源容量；执行图提供任务关系，部署图把这些条件补完整。
+核对计数结果：算子子任务 8 个，因为 S 和 F 链成 2 个 Task，加上 3 个累计和 1 个输出，最终跑起 6 个 Task（6 条线程）。在 Flink 默认的同组 Slot 共享规则下，同一个管道里互相不重叠的阶段可以共用一个 Slot，因此最少 Slot 数由最大并行度决定，这里是 3 个。但“需要几个 Slot”和“需要几台机器”中间还隔着每台机器配几个 Slot、内存和 CPU 够不够容纳这些条件。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -456,7 +497,7 @@ layout: section
 <ol class="outline"><li>运行进程与职责</li><li>并行子任务与数据交换</li><li class="current">资源分配与部署</li><li>瓶颈、积压与方案设计</li></ol>
 
 <!--
-现在我们有八个Task，准备放到两台机器上。请大家先读条件：每台一个TaskManager、每个两个Slot，同一作业允许共享，而且资源足够。没有这些条件，图上随便把方框塞进去不能叫可行部署。我们会逐一看每个Slot容纳哪些任务，并用标准部署图记录机器和进程的边界。
+现在手里有 8 个 Task，准备塞进 2 台工作机器。别急着往框里填任务，先读清资源前提：每台运行 1 个 TaskManager、各提供 2 个 Slot，作业允许同组共享且总资源够用。这一节我们会看清 Slot 到底隔离了什么、又没隔离什么，并用标准部署图画清机器边界。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/
@@ -470,11 +511,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/slot.svg" alt="Slot 是资源调度单位：机制与数据图" /></figure>
 
-- <strong>Slot</strong>表示 TaskManager 可分配的一份资源，提供任务放置的调度单位。
-- Slot 按资源份额分配；线程数与 CPU 隔离需分别确认。
+<strong>内存隔离</strong>：Slot 将 TaskManager 托管内存均分为固定份额
+
+<strong>线程共享</strong>：同共享组内的 Task 各自跑在独立线程上
+
+<strong>常见误区</strong>：默认 Slot <strong>只隔离内存，不硬隔离 CPU</strong>
 
 <!--
-Slot表示TaskManager提供的一份可分配资源；Task线程在获得资源后执行计算。TaskManager用Slot控制可以接纳的工作，并分配相应管理内存等资源。默认Slot机制提供资源分配，CPU独占需要额外的隔离机制。图里同一个Slot可以放来自同一作业共享组的多个Task，它们各有自己的执行线程。请分别数图中的Slot和Task线程，再用机器实际CPU资源判断可用计算能力。
+同学们一定要记住 Flink 架构里一个高频踩坑点：TaskManager 把总托管内存等分给各个 Slot，每个 Slot 占一份固定的内存额度，但它**默认并不给 CPU 核做硬隔离**。也就是说，同一个 Slot 共享组里放进来的 S0/F0、A0 和 O0 三个 Task 分别跑在三条线程上，它们共享这台机器的 CPU 时间片。Slot 数量决定了集群最多能容纳的最大并行度，而真正能跑多快，还要看机器实际 CPU 核数与内存余量。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -488,11 +532,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/slot-conditions.svg" alt="两台工作机器提供四个 Slot：机制与数据图" /></figure>
 
-- 题设：每台 1 个 TaskManager，每个 2 Slot，共 4 Slot。
-- 本作业同一共享组；每个 Slot 的 CPU、内存与网络需求均可容纳。
+<strong>集群规模</strong>：2 台机器 × 每台 1 个 TaskManager × 2 个 Slot = <strong>4 个 Slot</strong>
+
+<strong>共享前提</strong>：作业所有任务同属一个共享组，且单 Slot 容量满足运行需求
 
 <!--
-在这个专项部署里，两台机器各运行一个工作进程，每个工作进程报告两个可用Slot，总共四个。我们明确规定所有任务属于同一个允许共享的组，而且资源估算能够容纳图中组合。为什么要写资源条件？共享后的各Task还要共同满足内存、网络等资源需求。接下来给出八个Task共享四个Slot的摆法，每个累计实例各占一个Slot位置。
+先把物理资源画出来。两台服务器各启动一个 TaskManager 进程，每个进程配置两个空 Slot，全集群一共有四个 Slot。在允许同一作业跨阶段共享的前提下，4 个 Slot 恰好够容纳我们最高并行度为 4 的流水线。如果以后为了稳定把某个重算子放进独立共享组，就得另算 Slot。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -506,11 +551,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/slot-placement.svg" alt="八个 Task 的一个可行放置：机制与数据图" /></figure>
 
-- 四个累计 Task 分居四个 Slot；其余源过滤链与输出 Task 按组共享。
-- 放置不改变数据路由：跨机器同键记录仍需到对应累计实例。
+<strong>累计任务</strong>：4 个累计实例各占 1 个 Slot（A0–A3）
+
+<strong>共享复用</strong>：Source/Filter 链与 Sink 共用这 4 个 Slot
+
+<strong>网络路由</strong>：同键记录按 keyBy 跨节点发送，不受放置影响
 
 <!--
-现在把任务摆进去。机器一的第一个Slot放源过滤链S0/F0、累计A0和输出O0，第二个Slot放A1；机器二相应放S1/F1、A2、O1和A3。请大家把所有Task各圈一次，确认没有丢掉或重复。这个摆法同时说明共享不会取消网络交换：S0产生的某条B记录仍可能要去机器二的A2，不会因为身边有A0就随便加进去。放置负责在哪里运行，keyBy负责记录归谁，两条规则要同时成立。
+把 8 个 Task 稳稳放进 4 个 Slot：机器一的 Slot 1 放 S0/F0、A0、O0，Slot 2 放 A1；机器二同理放 S1/F1、A2、O1 和 A3。大家注意一个容易混淆的点：机器一上的 S0/F0 旁边就躺着 A0，这不代表 S0 产出的记录全留给 A0！如果 S0 读到一笔属于用户 B 的支付，keyBy 依然会通过跨机器网络把它发去机器二上的 A2。物理放置决定计算跑在哪，keyBy 决定逻辑归属谁，两条规则各管各的。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -524,11 +572,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/slot-groups.svg" alt="共享组改变后要重新估算资源：机制与数据图" /></figure>
 
-- 累计与其他阶段分属不同共享组时，分别计算各组需求，再相加。
-- 各组最高并行度给出所需 Slot 数，资源容量决定放置可行性。
+<strong>默认共享</strong>：同组复用槽位，本作业仅需 <strong>4 个 Slot</strong>
+
+<strong>独立隔离</strong>：划出独立共享组后，各组最高并行度相加
+
+<strong>禁止共享</strong>：若每 Task 独占 1 Slot，共需 <strong>8 个 Slot</strong>
 
 <!--
-刚才的四个Slot结论依赖同一共享组。现在假设把累计阶段和输入输出隔离，原来的共享组合就不一定允许。按各组的并行度与资源约束重新分配；若再规定每个Task独占Slot，这个作业就需要八个Slot。所需Slot数取决于各算子并行度和共享组划分。请在方案中先写共享与隔离前提，再给数量，读者才知道怎样验证你的部署。
+为什么前面反复强调“同组共享”这个前提？因为一旦某个算子特别吃内存或需要隔离故障影响，工程师把它放进另一个共享组后，原本共用 Slot 的算子就得拆开。比方说把 Aggregate 单独隔离，或者干脆要求每个 Task 独占一个 Slot，那么刚才只需要 4 个 Slot 的作业，瞬间就需要 8 个 Slot。做容量评估时，必须把共享组策略写清楚。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -542,11 +593,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/figures/deployment.svg" alt="部署图画机器与执行环境：机制与数据图" /></figure>
 
-- UML 节点表示设备（device）或执行环境；嵌套表示承载，通信线表示连接。
-- 本图：2 台工作机器，各 1 个 TaskManager 进程，内含作业制品与任务放置。
+<strong>设备（device）</strong>：最外层物理节点（2 台工作机器）
+
+<strong>环境与制品</strong>：内嵌 TaskManager 进程、部署包、Slot 布局及通信线
 
 <!--
-这次用标准UML部署图把位置画清楚。最外层device（设备）节点是物理工作机器，里面executionEnvironment（执行环境）节点是运行作业的进程环境，artifact（制品）表示部署的作业代码。连线说明协调交互或数据通道，旁边的说明给Slot与Task的摆放。大家比较组件图，它关心模块职责，而部署图关心模块和代码被哪个环境承载。请先找机器边界，再找进程边界，最后读具体Slot内容，就不会把一个作业代码制品误认为另一台服务器。
+把刚才的部署格局画成标准的 UML 部署图。最外层立体方框 `device` 是物理机器，嵌套在内的 `executionEnvironment` 是运行中的 TaskManager 进程，`artifact` 是部署上去的作业代码包，连线标明协调控制通道和跨节点网络数据交换。跟前面的组件图相比，组件图只看模块间谁调谁，部署图则把代码和进程钉死到物理节点边界上。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -561,11 +613,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/deploy-steps.svg" alt="部署图的绘制步骤：机制与数据图" /></figure>
 
-- 先画设备，再画执行环境和制品；把通信与资源标在对应边界上。
-- 核对任务只放一次、资源能容纳、连接支持物理数据路径。
+<strong>由外向内</strong>：先画物理机，再画 TaskManager 进程与部署包，最后填 Slot
+
+<strong>三项核对</strong>：Task 不重不漏、单机资源不超限、跨节点通道连通
 
 <!--
-大家动笔时从外向内画。先决定几台机器，再给每台画TaskManager进程，把相应作业代码和任务放到进程内部。之后连接协调交互与工作节点之间的数据通道，最后标明Slot和资源前提。先画机器、进程与Slot边界，再放入Task并核对每个Slot承载的资源需求。部署图应当能支持一次完整试走：记录进入哪个机器、在哪个Task更新、跨机器时沿哪条通道发送。
+自己动笔画部署图时遵循“从外往内”的顺序：先摆几台机器，再在机器里画 TaskManager 进程和部署包，最后填进 Slot 和 Task，并连上跨机网络线。画完之后随便挑一笔支付走一遍：从哪个机器进来、在哪个 Slot 算、万一跨机走哪条网络线出去，都能一路指出来才算完整。
 
 [Sources]
 - https://www.omg.org/spec/UML/2.5.1/PDF
@@ -578,12 +631,14 @@ class: course story-course
 ---
 ## 部署练习：增加节点会自动加速吗
 
-- 原作业累计并行度 4，已有 4 Slot；新增一台机器提供 2 Slot。
-- 保持并行度与任务放置不变：指出新增资源是否必然得到使用。
-- 画一个调整后的部署，并写需要同步修改与观察的条件。
+<strong>初始条件</strong>：累计并行度 4，占满 4 个 Slot；现扩容 1 台机器增加 2 个空闲 Slot
+
+> 问题：并行度与任务放置不变时，新增的 2 个 Slot 会自动提升吞吐吗？
+
+<strong>设计要求</strong>：画出调整后的部署方案，并写出使吞吐真正提升的前提
 
 <!--
-运营同学又送来一台机器，请先检查当前四个累计实例的放置是否变化。当前作业仍有四个累计实例且放置不变，新增Slot可供后续调度使用。请你画一个利用新增资源的方案，说明是迁移任务减轻共享压力，还是增加并行度、重新分配键。两种操作的效果和条件不同。最后用各子任务的吞吐、忙碌度与积压变化验证加速效果。
+运维同学帮忙多加了一台服务器、多了两个空 Slot，可老板看了一眼监控发现吞吐一动不动，为什么？请同学们结合刚才的架构先判断：保持并行度 4 和原放置不变时，新机器是不是在纯晒太阳？然后重新画一份调整方案，讲清楚靠什么手段才能把新机器用起来，又要警惕什么陷阱。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -597,11 +652,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/deploy-answer.svg" alt="部署答案：资源与执行规模分别调整：机制与数据图" /></figure>
 
-- 新增机器提供可用资源；调整并行度或任务放置后，作业才可能利用它。
-- 扩容后核对各键状态与吞吐；单热点键可能仍由一个实例承担。
+<strong>保持不变</strong>：并行度与放置不改，新 Slot 闲置，吞吐不变
+
+<strong>迁移减压</strong>：原节点 CPU/内存打满时，迁出部分 Task 减负
+
+<strong>扩并发提速</strong>：调高并行度占满新 Slot（前提：<strong>键分布均匀</strong>）
 
 <!--
-合理答案可以有两种。其一保持四个累计实例，把共享较重的Task迁到新增机器，观察资源竞争是否下降；其二在业务键足够分散且资源支持时增加并行度，再恢复和重分配状态。两种都要对比调整前后的指标，不能承诺只要加机器就线性加速。尤其当一个用户占大多数记录时，同键历史仍集中到一个实例，新增节点可能帮不了这处瓶颈。我们下一部分就用具体每秒条数把这个限制看出来。
+答案分成两种情况。如果原机器是 CPU 或内存跑满导致任务互相争抢，保持并行度 4 不变，把一部分 Task 匀到新机器的两个空闲 Slot 上，确实能缓解单机资源竞争；如果是算子本身算不过来，光加机器加 Slot 没用，必须把累计并行度也调上去（比如扩到 6）并在新 Slot 里起新实例。但千万别忘了：要是业务键严重倾斜（比如一个大商户占八成流量），加到 6 个实例也还是那一个实例累死，吞吐照样不随机器数线性增长。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -617,7 +675,7 @@ layout: section
 <ol class="outline"><li>运行进程与职责</li><li>并行子任务与数据交换</li><li>资源分配与部署</li><li class="current">瓶颈、积压与方案设计</li></ol>
 
 <!--
-现在任务已经能运行，接下来判断它跟不跟得上输入。大家把每秒条数当作同一单位沿线比较，找到最慢阶段，再看等待记录怎样累积。算完总能力以后，还要逐个核对键负载和子任务容量，找出热点位置。
+现在集群已经能跑起来了，我们把视角切到性能与容量上。判断流水线能不能扛住业务高峰，不能凭感觉，要把每秒记录条数当统一刻度沿线排开，找出最慢的那一段，定量算出积压速度，看穿反压是怎样一步步憋回源头的，以及热点键如何让一半机器闲着干瞪眼。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/
@@ -631,15 +689,16 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/rates.svg" alt="流水线的给定处理能力：机制与数据图" /></figure>
 
-- 专项题设：源 6000 条/s，75% 通过过滤，进入累计 4500 条/s。
-- 累计 4 实例×1000=4000 条/s；输出阶段能力 5000 条/s。
+<strong>原始输入</strong>：Source 读取 6000 条/s，经 Filter（75% 通过率）进入累计 <strong>4500 条/s</strong>
+
+<strong>处理上限</strong>：累计 4 实例 × 1000 = <strong>4000 条/s</strong>；下游 Sink 上限 <strong>5000 条/s</strong>
 
 <!--
-请大家先统一比较的范围。源每秒六千是原始记录，其中百分之七十五通过，真正进入累计的是四千五百。四个累计实例每个能稳定处理一千，假定键均匀分布，总共四千；输出能处理五千。不能直接拿六千和四千比较积压，因为中间已经过滤掉一部分记录。图中全部是本题构造的稳定能力，真实部署要用测量确认。下面我们先在这些条件下推导哪一段会形成等待。
+先把整条流水线各段的稳定处理能力摆在同一个坐标系里。Source 每秒吐出 6000 条原始记录，但经过 Filter 筛掉 25% 失败和取消后，真正送给累计阶段的输入速率是 4500 条/s。四个累计实例每人每秒稳稳消化 1000 条，总能力 4000 条/s；最右边的 Sink 每秒能写 5000 条。请特别注意过滤比率：不能直接拿 6000 去跟 4000 比，而要拿进入累计的 4500 来比。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -650,15 +709,16 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/bottleneck.svg" alt="最慢阶段限制持续完成速率：机制与数据图" /></figure>
 
-- 进入累计 4500，最多完成 4000：每秒有 <strong>500 条</strong>留下等待。
-- 累计阶段以 4000 条/s 限制整条线；Sink 尚有 1000 条/s 余量。
+<strong>木桶短板</strong>：到达累计 4500 条/s > 完成上限 4000 条/s，每秒净积压 <strong>500 条</strong>
+
+<strong>下游闲置</strong>：Sink 虽有 5000 条/s 能力，实际仅收到 4000 条/s，扩容 Sink 无效
 
 <!--
-我们把瓶颈固定在累计阶段。每秒四千五百条来到门口，最多四千条离开，多出的五百只能等着。右边Sink每秒能处理五千条，实际只收到累计阶段送来的四千条；瓶颈位于中间阶段。请问，若把输出扩到一万，等待会减少吗？在当前条件下不会，累计仍每秒少处理五百。本例应优先提高累计阶段容量，再核对新的全链路瓶颈。
+同学们看这根木桶短板效应。累计阶段每秒最多吞下 4000 条，可上游每时每刻都在送来 4500 条，多出来的 500 条既消不掉也丢不得，只能每秒往队列里多攒 500 条。这时候下游 Sink 明明有 5000 条/s 的胃口，实际也只能收到 4000 条/s，空转了 1000 的余量。遇到这种局面，花钱去给 Sink 扩容纯属白费力气，必须对准累计这个短板动手。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -669,15 +729,16 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/backlog.svg" alt="积压是速度差随时间累积的结果：机制与数据图" /></figure>
 
-- 初始无积压、速率恒定：10 s 等待 5000 条，20 s 等待 10000 条。
-- <strong>积压 =（到达率 − 完成率）×持续时间</strong>，单位为条。
+<strong>计算公式</strong>：积压量 =（到达速率 − 完成速率）× 持续时间
+
+<strong>数值推演</strong>：每秒净增 500 条，10 s 积压 <strong>5000 条</strong>，20 s 积压 <strong>10000 条</strong>
 
 <!--
-请大家每隔十秒给队伍拍一次照片。开始零条，十秒时每秒少处理五百，总共五千；再过十秒变成一万。这一万条积压来自每秒五百条的持续能力差，累计了二十秒。现在把公式中的单位消掉：每秒条数乘秒，结果是条。只要输入速度一直不降而能力不变，这个等待就不会自行消失。反过来，如果队伍只短暂增加后又下降，可能是瞬时波动，需要结合时间曲线判断。
+每隔十秒看一眼累计算子门前的排队长度：0 秒时干干净净，10 秒时每秒少消化 500 条，攒了 5000 条；20 秒时直接膨胀到 10000 条。只要输入速度高于最慢阶段的处理上限，这个队伍就会随时间线性长高，直到把内存和磁盘全塞爆。只有把到达速率和完成速率之间的负差额扭正，积压才会停止增长。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -688,15 +749,18 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/drain.svg" alt="清空积压取决于输入是否继续：机制与数据图" /></figure>
 
-- 停止新输入：10000÷4000=2.5 s 清空；继续 4500 条/s 时不会清空。
-- 若扩至 5000 条/s且输入仍4500，净清空能力500，需20 s。
+<strong>彻底断流</strong>：输入停为 0 时，10000 ÷ 4000 = <strong>2.5 s</strong>
+
+<strong>保持原流</strong>：输入仍 4500 > 4000，积压持续扩大
+
+<strong>带流扩容</strong>：能力升至 5000，净清空 500/s，需 <strong>20 s</strong>
 
 <!--
-大家常见的错误是把积压除以总能力，却忘了新记录仍在不断加入。若源真的暂停，四千每秒全部用于旧队伍，一万条需要两点五秒；若输入仍四千五百，旧队伍不但清不掉，还继续增长。现在假设累计扩到五千，输入仍四千五百，只有剩余五百每秒能消化旧积压，所以需要二十秒。请把这三个条件都写在图旁，清空时间离不开未来输入这一前提。
+排障时大家最常算错的一笔账就是估算恢复时间：很多人习惯拿 10000 条积压直接除以总处理能力 4000，算出 2.5 秒完事。这只有在源头彻底断流停产时才成立！如果业务流量还在以 4500 条/s 源源不断涌进来，哪怕把累计扩到 5000 条/s，算子每秒先得拿 4500 去伺候新来的流量，只剩 500 条/s 的余力去啃老积压，10000 条整整要 20 秒才能啃完。算恢复窗口时，永远要扣掉新进来的流量。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -707,11 +771,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/backpressure.svg" alt="反压沿满缓冲向上游传导：机制与数据图" /></figure>
 
-- <strong>反压（Backpressure）</strong>：下游接纳受限，使上游发送或处理受阻。
-- 累计吃不动→通道缓冲变满→过滤难以发送→源读取受限。
+<strong>传导路径</strong>：累计满载 → 缓冲队列填满 → Filter 阻塞 → Source 放慢拉取
+
+<strong>排查口诀</strong>：顺着告警往下找，<strong>最后一个高忙碌且未被下游反压</strong>的节点才是真瓶颈
 
 <!--
-大家把记录当作真正排队的对象看。累计每秒只能拿四千，前面的通道缓冲先逐渐占满；过滤想再发送时没有位置，只能等待；它等得多了，源读进来的速度也会受限制。反压将下游处理限制沿缓冲与发送路径传向上游，使上游降低发送速度。请问观察到源忙碌度低，就能说源是瓶颈吗？不能，它可能是被后面的累计卡住，所以要沿反压路径往下游找真正持续忙碌的阶段。
+现实系统不可能让队列无限长下去，每段通道的缓冲区大小都是有限的。当累计阶段吃不动，它面前的缓冲很快填满，上游 Filter 想发也发不出去，被迫停下来干等；Filter 停下来后，它自己的输入缓冲也满，最终一路传到 Source 放慢从 Kafka 拉数据的速度。这就叫反压。排障时看到 Source 和 Filter 都在告警反压，不要傻乎乎去给 Source 加机器，因为真正憋死整条线的，往往是顺着红色警告往下找、**最后一个自己很忙却没有被下游反压**的那个节点。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -726,15 +791,16 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/hot.svg" alt="热点键让总能力无法充分使用：机制与数据图" /></figure>
 
-- 四实例输入分别 3000、500、500、500；每实例能力均 1000 条/s。
-- 实际完成 1000+500+500+500=2500；热点实例每秒积压 <strong>2000</strong>。
+<strong>流量倾斜</strong>：4 个累计实例各收 3000、500、500、500 条/s（单实例上限 1000 条/s）
+
+<strong>实际产出</strong>：1000 + 500 + 500 + 500 = <strong>2500 条/s</strong>（理论 4000）；热点实例每秒积压 <strong>2000 条</strong>
 
 <!--
-刚才假定键均匀，现在把一个用户变成热点，占每秒三千条。它的所有记录必须进同一份累计历史，该实例只能完成一千，于是自己每秒多等两千。其他三个实例各只有五百输入，虽然还有空闲，也不会自动抢走热点键的一半状态。四个实例实际完成一千加三个五百，共两千五百条每秒，低于合计四千的名义能力。调优时因此必须看子任务与键分布，单看全作业总CPU会掩盖这处拥堵。
+再看一个更隐蔽的杀手：数据倾斜。4 个累计实例理论总能力依然是 4000 条/s，可偏偏有一位大商户每秒发来 3000 笔支付，其余所有用户加起来才 1500。在 keyBy 的铁律下，大商户的 3000 笔只能全塞进同一个实例里！这个热点实例满头大汗只能吞下 1000 条，每秒暴涨 2000 条积压；而旁边另外三个实例每个只分到 500 条，天天吃一半留一半。整条流水线理论 4000、实际只跑出 2500，全卡在了一个热点键上。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -745,16 +811,17 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/local.svg" alt="可合并聚合可以先局部再合并：机制与数据图" /></figure>
 
-- 对求和、计数可先按（用户，分片）局部聚合，再按用户合并。
-- 分片结果须约定窗口、版本或增量语义，下游按对应规则合并。
+<strong>两阶段聚合</strong>：对求和、计数等结合律运算，先加随机盐分片局部聚合，再按 userId 汇总
+
+<strong>语义前提</strong>：第一层输出须采用不重叠增量或分片最新值，防止二次合并算重
 
 <!--
-怎样减轻热点？对于可合并的求和与计数，可以先让不同分片分别形成部分结果，再由同一用户的合并阶段组合。这样能减少最终阶段接收的消息频率，但最后仍有用户级合并工作。请特别检查局部输出的含义：如果每秒报累计值三千、六千，最终不能把两次累计又相加。需要约定不重复的增量，或按分片保存最新值再重算。这里能用这种结构，是因为求和、计数允许分解合并，不能把任意有顺序依赖的业务状态都照搬拆开。
+怎么把那 3000 条的热点拆开？如果算的是求和或者计数这种满足结合律的运算，工程上常用“两阶段聚合（加盐打散）”：先给热点键随机拼上一个分片编号 `(userId, shard)`，让 4 个实例一起并行做局部预聚合，把每秒 3000 条原始流水压缩成几条部分和；再剥掉分片编号，按真正的 `userId` 送进第二层合并出用户总额。但注意合并语义：千万不能每隔一秒吐一次局部累计值然后第二层又傻傻相加，必须传递不重叠增量或按分片保存最新值。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -765,11 +832,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/metrics.svg" alt="从子任务指标定位瓶颈：机制与数据图" /></figure>
 
-- 一起看输入率、输出率、忙碌度、反压与积压，按子任务比较。
-- 大多数实例空闲而一个持续满载，应先检查热点与路由。
+<strong>核心指标</strong>：按子任务对照输入率、输出率、忙碌度（Busy）与反压比率
+
+<strong>倾斜特征</strong>：多数实例空闲、单个实例长期 100% 满载，优先排查热点键
 
 <!--
-现在把指标当作刚才图的证据。输入率高于输出率，并且积压持续增长，说明某处能力没有跟上；上游等待、下游忙碌，帮助我们沿线定位；若只有一个累计实例忙，其余空闲，就回看键分布。将CPU、网络、缓冲和输出延迟放到同一路径上看，定位实际限制发送或处理的阶段。方案中要先提出“哪一处限制了什么”的假设，再选择指标验证，调整后仍需核对业务结果与等待是否改善。
+上线以后面对监控大盘怎么断案？记住这组组合拳：沿着 DAG 从下游往上游倒查各子任务的忙碌度与反压状态。如果下游所有实例都很闲、上游某一个实例忙碌度接近 100% 且没有反压，那就是纯计算瓶颈或热点倾斜；如果上游个个显示高反压、唯独下游某算子忙碌度 100%，说明那个下游算子就是全线堵点。每项调优假设都要落实到对应子任务的监控曲线上。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -784,15 +852,16 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/solution.svg" alt="部署方案示范：均匀键的累计作业：机制与数据图" /></figure>
 
-- 两台 TM 各 2 Slot；S/F 两条链、累计4、Sink2，同组且容量足够。
-- 4500 条/s 到达超过4000能力：提升累计能力并验证分布、积压及结果。
+<strong>部署格局</strong>：2 台 TM 共 4 Slot，同共享组容纳 8 个 Task
+
+<strong>瓶颈改造</strong>：4500 > 4000 须扩大累计并行度，并验证键均匀、积压清零与账目一致
 
 <!--
-我们把执行图、资源和速率合成方案。先给出两台机器四个Slot的共享放置，明确资源能容纳；再写输入与每阶段能力，发现累计四千不足以接住四千五百。调整时可以增加并行实例或提高单实例能力，但必须实际测到新的稳定能力，并检查键是否均匀。最后用同一组支付核对用户结果，观察积压是否下降。这样一份方案既能回答“放在哪里”，也能解释“为什么现在不够，以及怎样证明改好”。
+把物理执行图、Slot 放置和速率核算整合成一份完整的部署方案。先交待清楚 8 个 Task 如何共享 4 个 Slot 且单机资源不超限；再算出累计阶段只有 4000 能力接不住 4500 流量，明确提出扩容累计实例并核查新资源；最后约定上线验收不仅要看积压归零，还得拿同一批样本核对用户金额不重不漏。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -801,16 +870,18 @@ class: course story-course
 ---
 ## 独立练习：积压与扩容方案
 
-- 专项输入3600条/s；累计3实例×1000；初始无积压，持续15s。
-- 计算积压；源暂停后需多久清空？扩成4实例、输入继续时又需多久？
-- 写执行规模、资源前提与热点检查，并画调整前后图。
+<strong>场景参数</strong>：进入累计 3600 条/s；累计 3 实例 × 1000 条/s；初始无积压，持续 15 s
+
+<strong>定量计算</strong>：求 15 s 后积压；分别计算断流后，以及扩至 4 实例且输入继续时的清空耗时
+
+<strong>方案设计</strong>：写出执行规模、Slot 前提与热点核查，画出调整前后对比
 
 <!--
-请大家独立处理这一组新的数字。先用输入率与累计总能力求出每秒差，再乘十五秒。然后分别处理两个情境：完全暂停新输入，或者扩容后保持原输入。请分别标明“停止输入”与“持续输入”两个条件，写出各自的净清空速率。扩容方案写明累计实例数量、资源容量和键分布，再给出验证吞吐与积压的指标。图中每条箭头都应能解释某个数值为什么出现。
+请同学们独立算一算这组扩容题。三个实例总能力 3000，输入 3600，先算 15 秒积累了多少等待记录；再分别计算“彻底停流”和“扩到 4 实例但 3600 流量照常涌入”两种情况下的清空时间。算完数字后，补全资源前提和扩容后需要盯哪些监控指标。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -821,15 +892,18 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/exercise-answer.svg" alt="练习答案：9000 条与两种清空时间：机制与数据图" /></figure>
 
-- 积压（3600−3000）×15=9000；暂停输入后9000÷3000=3s。
-- 扩为4000能力且输入继续3600：9000÷400=22.5s；前提是无热点等新瓶颈。
+<strong>积压量</strong>：(3600 − 3000) × 15 = <strong>9000 条</strong>
+
+<strong>清空耗时</strong>：断流 <strong>3 s</strong>；扩至 4000 且输入继续需 <strong>22.5 s</strong>
+
+<strong>成立前提</strong>：新实例有空闲 Slot、键无倾斜且 Sink 不成瓶颈
 
 <!--
-我们先找差额，每秒少处理六百条，十五秒就是九千。若完全暂停输入，三千能力全用来清旧队伍，所以三秒；若扩为四千而输入继续三千六百，只剩四百清旧队伍，需要二十二点五秒。请大家把条件写在每条算式旁边，并画出新输入仍在进来的箭头。合理扩容方案还要说明四个实例能否真正分摊键、Slot和资源是否容纳，以及输出端是否变成新的限制。数字推演因此直接检验了方案的因果关系。
+核对这两组清空时间。每秒少算 600 条，15 秒刚好攒下 9000 条。断流暂停时，3000 能力全用于消肿，3 秒就能清空；但如果保持 3600 进水、能力提到 4000，净抽水速度只有 400 条/s，要足足 22.5 秒才能抽干。这个答案还暗含着两条工程前提：4 个实例对应的 Slot 资源必须足够，而且不能出现新热点键或者下游 Sink 变成新瓶颈。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -838,16 +912,18 @@ class: course story-course
 ---
 ## 独立方案练习：一个用户占三千条每秒
 
-- 总输入4500条/s；一个用户3000，其余合计1500。
-- 每个按键累计实例能力1000；提出方案并说明可合并性与输出规则。
-- 写清为何单纯增加实例不保证消除这个用户的积压。
+<strong>倾斜场景</strong>：总输入 4500 条/s（单一热点用户 3000 条/s，其余合计 1500 条/s）
+
+<strong>实例上限</strong>：每个累计实例最多处理 1000 条/s；给出改造方案与合并语义
+
+> 问题：为什么单纯把累计并行度从 4 扩到 8，依然救不了这个热点用户？
 
 <!--
-这道题不只求一个数字，请把热点的历史归属画出来。将四个累计实例扩为八个后，同一用户仍归一个实例，热点用户每秒三千条的负载仍由该实例承担。你可以为求和提出局部与最终合并，也可以说明提高单实例能力等其他选择，但每种都要给出条件。尤其是分片输出到底是增量还是累计，要写清最后一层怎样合并，防止把性能问题改成重复统计问题。
+这道题专治“遇事不决加机器”的思路。已知一个大客户自己就占了每秒 3000 条，请先说透为什么把并行度从 4 扩成 8 甚至 16，这个客户还是会卡死在同一个实例里；然后再用两阶段局部聚合或提升单实例吞吐的思路给出可落地的方案，重点写清楚中间结果怎么发才不会把钱算重。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -858,15 +934,16 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/hot-answer.svg" alt="热点方案答案：减少最终阶段消息压力：机制与数据图" /></figure>
 
-- 可先按（用户，分片）求非重叠区间增量，再按用户汇总增量。
-- 给出发布频率与合并能力，验证最终阶段跟得上；原始事件仍需唯一语义。
+<strong>局部降频</strong>：先按（用户，分片）对不重叠区间算局部增量，再按 userId 汇总
+
+<strong>验证要点</strong>：事件去重须在打散前完成，并核查最终汇总层跟得上合并消息频率
 
 <!--
-一种可行设计是把热点用户分成多个局部统计分片，在明确的不重叠时间段内产生增量，再由用户级合并阶段接收这些较少的增量消息。这里要保证每个事件只进入一个局部贡献，区间边界明确，后续重试也不会重复计入。局部聚合降低最终层收到的消息数；最终层仍维护用户完整状态，需要按合并后的负载测容量。大家可以提出别的方案，只要能沿图说明压力降低在哪里、哪些规则保证结果正确，并用输入与输出数据验证。
+参考做法是加盐分片两阶段聚合：前面先按 `(userId, shard)` 把 3000 条/s 拆散到多个分片上，在互不重叠的微时间窗或计数批里算出增量，再把大幅降频后的增量消息按 `userId` 送入最终层汇总。注意两点：去重最好在打散前按 `eventId` 做完（或保持同一事件进同一分片），中间发出的必须是互不重叠的增量，避免第二层把历史加爆。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->
 
 
@@ -877,11 +954,12 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/summary.svg" alt="本讲的执行层次：机制与数据图" /></figure>
 
-- 算子→并行子任务→Task与线程→Slot→TaskManager进程→机器。
-- 每一层回答不同问题；性能结论要同时看容量与负载分布。
+<strong>六层映射</strong>：算子 → 并行子任务 → Task（算子链）与线程 → Slot → TaskManager → 机器
+
+<strong>性能真相</strong>：持续吞吐取决于最慢瓶颈与键分布，而不是只看集群机器总数
 
 <!--
-今天请大家把这条层次链指着读一遍。逻辑算子说明规则，子任务说明执行实例，Task与线程说明怎样连续执行，Slot说明资源分配，TaskManager进程和机器说明承载边界。再把记录沿keyBy路由到同一份历史，核对八个Task在四个Slot上的共享条件。最后，四千能力与四千五百输入解释积压，热点解释为什么总能力还可能闲置。下一讲我们保持这套执行模型，转向事件时间进度：机器已经运行，为什么一条晚到记录仍可能改变之前发布的结果？
+把今天拆开的系统层次从内到外串一遍：逻辑算子决定计算规则，并行度展开成子任务，算子链把窄依赖焊进同一个 Task 线程以省掉序列化，Slot 给 Task 切分托管内存，TaskManager 进程和物理机负责承载运行。一旦线上跑慢了，先看反压停在哪个下游算子，再查是不是数据倾斜惹的祸。下一讲我们把镜头转向时间维度：就算机器足够快，一条迟到几秒的小票又怎样改写已经发出去的营业额？
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -895,11 +973,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/deployment-modes.svg" alt="附录：独立部署与资源平台：机制与数据图" /></figure>
 
-- Standalone 使用已有工作进程；Kubernetes、YARN 等可提供资源管理能力。
-- 运行位置改变，作业的逻辑与按键语义仍需保持。
+<strong>Standalone</strong>：静态启动的常驻 TaskManager 集群
+
+<strong>YARN / K8s</strong>：按作业资源需求动态申请与回收容器
+
+<strong>语义不变</strong>：部署平台只管进程周期，不改 DAG 与状态语义
 
 <!--
-图中列出不同资源环境，是为了说明谁提供运行所需的工作进程。在独立部署中，Flink使用已经启动的TaskManager；在资源平台上，可以由平台按部署方式提供相应资源。平台提供运行与资源管理，过滤、分组和累计仍按同一份业务规则执行。无论放在哪个环境，源过滤链、按键累计与输出协议仍要清楚，资源也必须满足实际需求。方案中先选定运行环境，再写出实例放置、资源需求与容量验证条件。
+最后看部署模式的区别。Standalone 像包了一批常驻机器，TaskManager 事先起好等人提交；而跑在 YARN 或 Kubernetes 上时，ResourceManager 可以根据作业需要动态向资源平台拉起容器、作业结束再释放掉。部署方式解决的是进程谁来拉起、挂了谁来补，里面的过滤、keyBy 和算子链逻辑完全不变。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
@@ -913,13 +994,14 @@ class: course story-course
 
 <figure class="story-figure"><img src="./assets/story/network.svg" alt="附录：网络交换也有成本：机制与数据图" /></figure>
 
-- 专项估算：4000条/s×250B/条=1,000,000B/s，约1MB/s业务载荷。
-- 实际还包含序列化、缓冲和协议成本；跨节点比例决定网络负载。
+<strong>载荷估算</strong>：4000 条/s × 250 B/条 = 1,000,000 B/s（约 <strong>1 MB/s</strong> 纯业务载荷）
+
+<strong>实际带宽</strong>：须额外计入序列化、协议缓冲与跨节点比例（Broadcast 更须乘倍）
 
 <!--
-最后看一项可以独立估算的成本。每秒四千条，每条业务载荷二百五十字节，相乘是一百万字节每秒，按十进制约一MB每秒。这个数字只描述业务数据，不包括协议与序列化等开销。如果大部分记录留在本机，跨节点网络需求会不同；如果发生广播，复制数量也会改变负载。先写清消息大小和交换范围，再用实测吞吐与网络指标校正估算。
+做集群规划时别漏了网络带宽。假如 keyBy 后每秒跨节点发送 4000 条事件，每条纯业务字段 250 字节，每秒净载荷就是 1 MB/s；再算上序列化头、缓冲区帧和网络协议，实际流量还要再放大一些。算子链尽量把上下游留在同线程免传输，而遇到 Broadcast 广播大表时更要先算好总带宽乘法。
 
 [Sources]
 - https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/
-- 教学构造数据：course/data/cases.json；金额单位为分。专项场景在页面注明参数。
+- 教学构造数据：course/data/cases.json；金额单位为分。特定示例在页面注明参数。
 -->

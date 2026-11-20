@@ -152,7 +152,9 @@ def draw(s):
   b=line(170,335,950,335,arrow=True)+t(830,380,'事件时间 / s',23,BLUE)
   for i,(oid,ct,pt) in enumerate(s['rows']):
    y=60+i*75;xx=170+ct*43;b+=t(10,y+9,oid,27,BLUE)+line(170,y,950,y,GRAY,1)+line(xx,y,xx+5*43,y,BLUE,12)+dot(xx,y,f'创建{ct}s',BLUE,21)
-   if pt is not None:b+=f'<circle cx="{170+pt*43}" cy="{y}" r="8" fill="{GREEN if s.get('valid',[0<=v[2]-v[1]<=5 if v[2] is not None else False for v in s['rows']])[i] else RED}"/>'+t(180+pt*43,y+30,f'支付{pt}s',22,GREEN if s.get('valid',[0<=v[2]-v[1]<=5 if v[2] is not None else False for v in s['rows']])[i] else RED)
+   if pt is not None:
+    col=GREEN if s.get('valid',[0<=v[2]-v[1]<=5 if v[2] is not None else False for v in s['rows']])[i] else RED
+    b+=f'<circle cx="{170+pt*43}" cy="{y}" r="8" fill="{col}"/>'+t(180+pt*43,y+30,f'支付{pt}s',22,col)
  elif k=='changes':
   b=t(30,32,s.get('heading','每条消息改变哪一行？'),29,BLUE)
   for i,(msg,old,new) in enumerate(s['rows']):
